@@ -6,3 +6,4 @@ yarn-error.log*
 pids/
 logs/
 *.log
+images/
