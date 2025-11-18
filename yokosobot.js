@@ -29,7 +29,7 @@ const client = new Client({
     GatewayIntentBits.GuildMessages, //サーバ内メッセージ
     GatewayIntentBits.DirectMessages, // DM を受け取る
     GatewayIntentBits.MessageContent,  // メッセージ内容を読む
-    GatewayIntentBits.VoiceStateUpdate // VCの状態変化を検知
+    GatewayIntentBits.GuildVoiceStates // VCの状態変化を検知
   ],
   partials: [Partials.Channel]        // DM チャンネル用
 });
