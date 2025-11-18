@@ -15,6 +15,9 @@ const ROLE_ID = "1439924125685649459";
 // 画像URI
 const MENTION_IMAGE = "/home/yoppy3/discord-bot/images/mention.png";
 const YONDENAI_IMAGE = "/home/yoppy3/discord-bot/images/yondenai.png";
+
+//変数
+let flag = 0;
 // ===================
 
 const client = new Client({
@@ -22,7 +25,7 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers, //入室イベント
     GatewayIntentBits.GuildMessages, //サーバ内メッセージ
-　　GatewayIntentBits.DirectMessages, // DM を受け取る
+    GatewayIntentBits.DirectMessages, // DM を受け取る
     GatewayIntentBits.MessageContent  // メッセージ内容を読む
   ],
   partials: [Partials.Channel]        // DM チャンネル用
@@ -76,14 +79,15 @@ client.on("messageCreate", async (message) => {
     }
   }
 
-　//文字列に反応
-　//文字列定義
+ //文字列に反応
+ //文字列定義
 	const ofurosuki_words = ["オフロスキ","おふろすき","ｵﾌﾛｽｷ","ofurosuki","ohurosuki","offrosky","OFUROSUKI","Ofurosuki","Ohurosuki","OHUROSUKI"];
-　if (ofurosuki_words.some(w => message.content.includes(w))) {
+  if (ofurosuki_words.some(w => message.content.includes(w))) {
 	try {
 		await message.channel.send({
 			files: [MENTION_IMAGE],
 		});
+    flag = 1;
 		console.log(`${message.author.tag}からの文字列により呼ばれたオフロスキーを送信しました`);
 	} catch (err) {
 		console.error(`${message.author.tag}からの文字列による呼ばれたオフロスキーの送信に失敗しました`, err);
@@ -92,23 +96,30 @@ client.on("messageCreate", async (message) => {
 
 
   const yondenai_words = ["呼んでな","よんでな","ﾖﾝﾃﾞﾅ","yondena","Yondena","yomdena","YONDENA"];
-　if (yondenai_words.some(w => message.content.includes(w))) {
+  if (yondenai_words.some(w => message.content.includes(w))) {
 	try {
 		await message.channel.send({
 			files: [YONDENAI_IMAGE],
 		});
+    flag = 1;
 		console.log(`${message.author.tag}からの文字列により呼んでないオフロスキーを送信しました`);
 	} catch (err) {
 		console.error(`${message.author.tag}からの文字列による呼んでないオフロスキーの送信に失敗しました`, err);
 	}
 }
 
-　// guild が null = DM チャット
+if (!message.guild && flag == 1){
+  flag = 0; 
+  return;
+}
+
+ // guild が null = DM チャット
   if (!message.guild) {
     await message.channel.send(
       "ようこそいらいっしゃい！みんな来ると思ってミートパイを焼いてたの！それともクッキーがいいかしら？"
     );
 	  console.log(`${message.author.tag}のDMで反応しました`);
+    flag = 0;
   }
 });
 
