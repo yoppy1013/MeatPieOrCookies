@@ -81,6 +81,8 @@ client.on("voiceStateUpdate", (oldState, newState) => {
   
   const userName = member.user.tag; //ユーザ名
   const userId = member.id; // ユーザーIDをキーとして使用
+  const userMention = member.toString(); //ユーザメンション
+
 
   //VC滞在時間を処理  
   const calculateDuration = (startTime) => {
@@ -110,17 +112,19 @@ client.on("voiceStateUpdate", (oldState, newState) => {
   if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
     // VCを退出したメッセージを送信
     const oldVcName = oldState.channel.name;
-    const leaveMessage = `「${oldVcName}」から「${userName}」が退出しました。 (通話時間: ${duration})`;
+    const leaveMessage = `${oldVcLink}から${userMention}が退出しました。 (通話時間: ${duration})`;
     logChannel.send(leaveMessage);
-    console.log(` ${leaveMessage}`);
+    console.log(`${oldVcName}から${userName}が退出しました。`);
 
     // VCに参加したメッセージを送信
     vcJoinTimes.set(userId, Date.now()); //時間測定開始
 
+    const newVcLink = newState.channel.toString();
     const newVcName = newState.channel.name;
-    const joinMessage = `「${newVcName}」に「${userName}」が参加しました。`;
+
+    const joinMessage = `${newVcLink}に${userMention}が参加しました。`;
     logChannel.send(joinMessage);
-    console.log(`${joinMessage}`);
+    console.log(`${newVcName}に${userName}が参加しました。`);
   } 
 
   // ===VCへの参加 (oldStateにチャンネルがなく、newStateにチャンネルがある)===
@@ -128,10 +132,12 @@ client.on("voiceStateUpdate", (oldState, newState) => {
     vcJoinTimes.set(userId, Date.now()); //時間測定開始
 
     const vcName = newState.channel.name;
-    const message = `「${vcName}」に「${userName}」が参加しました。`;
+    const vcLink = newState.channel.toString();
+
+    const message = `${vcLink}に${userMention}が参加しました。`;
     
     logChannel.send(message);
-    console.log(`${message}`);
+    console.log(`${vcName}に${userName}が参加しました。`);
   } 
 
   // ===VCからの退出 (oldStateにチャンネルがあり、newStateにチャンネルがない)===
@@ -140,19 +146,22 @@ client.on("voiceStateUpdate", (oldState, newState) => {
       const startTime = vcJoinTimes.get(userId);
       const duration = calculateDuration(startTime);
       
+      const vcLink = oldState.channel.toString(); 
       const vcName = oldState.channel.name;
-      const message = `「${vcName}」から「${userName}」が退出しました。 (通話時間: ${duration})`;
+
+
+      const message = `${vcLink}から${userMention}が退出しました。 (通話時間: ${duration})`;
       
       logChannel.send(message);
-      console.log(`${message}`);
+      console.log(`${vcName}から${userName}が退出しました。`);
       
       vcJoinTimes.delete(userId); // 記録を削除
     } else {
         // 記録がない場合は時間なしで退出メッセージのみ
         const vcName = oldState.channel.name;
-        const message = `「${vcName}」から「${userName}」が退出しました。`;
+        const message = `${vcLink}から${userMention}が退出しました。 `;
         logChannel.send(message);
-        console.log(`${message}`);
+        console.log(`${vcName}から${userName}が退出しました。`);
     }
   }
 });
