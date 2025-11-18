@@ -6,10 +6,11 @@ console.log("TOKENの読込に成功しました");
 // Botトークン
 const TOKEN = process.env.DISCORD_BOT_TOKEN;;
 
-// 挨拶を送るチャンネルID
+// チャンネルID
 const WELCOME_CHANNEL_ID = "1439923741588193415";
+const VOICE_LOG_CHANNEL_ID = "1440345393249648721";
 
-// 付与するロールID
+// ロールID
 const ROLE_ID = "1439924125685649459";
 
 // 画像URI
@@ -17,7 +18,8 @@ const MENTION_IMAGE = "/home/yoppy3/discord-bot/images/mention.png";
 const YONDENAI_IMAGE = "/home/yoppy3/discord-bot/images/yondenai.png";
 
 //変数
-let flag = 0;
+let flag = 0; //画像送信フラグ
+const vcJoinTimes = new Map();
 // ===================
 
 const client = new Client({
@@ -26,7 +28,8 @@ const client = new Client({
     GatewayIntentBits.GuildMembers, //入室イベント
     GatewayIntentBits.GuildMessages, //サーバ内メッセージ
     GatewayIntentBits.DirectMessages, // DM を受け取る
-    GatewayIntentBits.MessageContent  // メッセージ内容を読む
+    GatewayIntentBits.MessageContent,  // メッセージ内容を読む
+    GatewayIntentBits.VoiceStateUpdate // VCの状態変化を検知
   ],
   partials: [Partials.Channel]        // DM チャンネル用
 });
@@ -36,11 +39,13 @@ client.once("ready", () => {
   console.log(`サーバに接続しました: ${client.user.tag}`);
 });
 
+//~~~参加処理~~~
+
 // サーバー参加イベント
 client.on("guildMemberAdd", async (member) => {
   console.log(`${member.user.tag} がサーバーに参加しました`);
 
-  // 挨拶を送る（メンションなし）
+  // 挨拶を送る
   const channel = member.guild.channels.cache.get(WELCOME_CHANNEL_ID);
   if (channel) {
     await channel.send(
@@ -59,6 +64,100 @@ client.on("guildMemberAdd", async (member) => {
     console.error(`ロールID「${ROLE_ID}」の ${member.user.tag} への付与に失敗しました`, err);
   }
 });
+
+//~~~VC処理~~~
+
+// VC状態変化イベント
+client.on("voiceStateUpdate", (oldState, newState) => {
+  // ボットが接続しているギルド内のVCの変更を処理
+  const member = newState.member || oldState.member;
+  
+  // ログを送信するテキストチャンネルを取得
+  const logChannel = member.guild.channels.cache.get(VOICE_LOG_CHANNEL_ID);
+  if (!logChannel) {
+    console.error(`VOICE_LOG_CHANNEL_ID (${VOICE_LOG_CHANNEL_ID}) のチャンネルが見つかりません。`);
+    return;
+  }
+  
+  const userName = member.user.tag; //ユーザ名
+  const userId = member.id; // ユーザーIDをキーとして使用
+
+  //VC滞在時間を処理  
+  const calculateDuration = (startTime) => {
+    const durationMs = Date.now() - startTime;
+    const seconds = Math.floor(durationMs / 1000);
+
+    // 0秒未満
+    if (seconds < 0) return "0秒"; 
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+
+    let timeString = [];
+    if (hours > 0) timeString.push(`${hours}時間`);
+    if (minutes > 0) timeString.push(`${minutes}分`);
+    
+    // VC滞在時間が0分0秒の場合は秒を表示し、それ以外で秒が0の場合は表示しない
+    if (remainingSeconds > 0 || (hours === 0 && minutes === 0)) {
+        timeString.push(`${remainingSeconds}秒`);
+    }
+    
+    return timeString.join('');
+  };
+
+  // ===VC間の移動 (oldStateとnewState両方にチャンネルIDがあり、IDが異なる場合)===
+  if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
+    // VCを退出したメッセージを送信
+    const oldVcName = oldState.channel.name;
+    const leaveMessage = `「${oldVcName}」から「${userName}」が退出しました。 (通話時間: ${duration})`;
+    logChannel.send(leaveMessage);
+    console.log(` ${leaveMessage}`);
+
+    // VCに参加したメッセージを送信
+    vcJoinTimes.set(userId, Date.now()); //時間測定開始
+
+    const newVcName = newState.channel.name;
+    const joinMessage = `「${newVcName}」に「${userName}」が参加しました。`;
+    logChannel.send(joinMessage);
+    console.log(`${joinMessage}`);
+  } 
+
+  // ===VCへの参加 (oldStateにチャンネルがなく、newStateにチャンネルがある)===
+  else if (!oldState.channelId && newState.channelId) {
+    vcJoinTimes.set(userId, Date.now()); //時間測定開始
+
+    const vcName = newState.channel.name;
+    const message = `「${vcName}」に「${userName}」が参加しました。`;
+    
+    logChannel.send(message);
+    console.log(`${message}`);
+  } 
+
+  // ===VCからの退出 (oldStateにチャンネルがあり、newStateにチャンネルがない)===
+  else if (oldState.channelId && !newState.channelId) {
+    if (vcJoinTimes.has(userId)) {
+      const startTime = vcJoinTimes.get(userId);
+      const duration = calculateDuration(startTime);
+      
+      const vcName = oldState.channel.name;
+      const message = `「${vcName}」から「${userName}」が退出しました。 (通話時間: ${duration})`;
+      
+      logChannel.send(message);
+      console.log(`${message}`);
+      
+      vcJoinTimes.delete(userId); // 記録を削除
+    } else {
+        // 記録がない場合は時間なしで退出メッセージのみ
+        const vcName = oldState.channel.name;
+        const message = `「${vcName}」から「${userName}」が退出しました。`;
+        logChannel.send(message);
+        console.log(`${message}`);
+    }
+  }
+});
+
+// ~~~DM処理~~~
 
 // DM で話しかけられたときの処理
 client.on("messageCreate", async (message) => {
