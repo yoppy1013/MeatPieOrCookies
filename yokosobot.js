@@ -1,3 +1,4 @@
+//あああああああああああああああああああ
 const { Client, GatewayIntentBits,Partials} = require("discord.js");
 require("dotenv").config();
 console.log("TOKENの読込に成功しました");
