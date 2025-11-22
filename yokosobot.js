@@ -141,25 +141,26 @@ client.on("voiceStateUpdate", (oldState, newState) => {
   } 
 
   // ===VCからの退出===
-  else if (oldState.channelId && !newState.channelId) {
-    const vcLink = oldState.channel.toString();
-    const vcName = oldState.channel.name;
+else if (oldState.channelId && !newState.channelId) {
+  const vcLink = oldState.channel.toString();
+  const vcName = oldState.channel.name;
 
-    if (vcJoinTimes.has(userId)) {
-      const startTime = vcJoinTimes.get(userId);
-      const duration = calculateDuration(startTime);
+  if (vcJoinTimes.has(userId)) {
+    const startTime = vcJoinTimes.get(userId);
+    const duration = calculateDuration(startTime);
 
-      const message = `${vcLink}から**${userName}**が退出しました。\n(通話時間: ${duration})`;
-      logChannel.send(message);
-      console.log(`${vcName}から${userName}が退出しました。(通話時間: ${duration})`);
-      
-      vcJoinTimes.delete(userId); // 記録を削除
-    } else {
-      const message = `${vcLink}から**${userName}**が退出しました。`;
-      logChannel.send(message);
-      console.log(`${vcName}から${userName}が退出しました。(時間計測なし)`);
-    }
+    const message = `${vcLink}から**${userName}**が退出しました。\n(通話時間: ${duration})`;
+    logChannel.send(message);
+    console.log(`${vcName}から${userName}が退出しました。(通話時間: ${duration})`);
+
+    vcJoinTimes.delete(userId); // 記録を削除
+  } else {
+    // 記録がない場合は時間なしで退出メッセージのみ
+    const message = `${vcLink}から**${userName}**が退出しました。`;
+    logChannel.send(message);
+    console.log(`${vcName}から${userName}が退出しました。(時間計測なし)`);
   }
+}
 });
 
 // === VCステータスメッセージ変更検知 ===
