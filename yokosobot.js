@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits,Partials} = require("discord.js");
+const { Client, GatewayIntentBits, Partials, ChannelType} = require("discord.js");
 require("dotenv").config();
 console.log("TOKENの読込に成功しました");
 
@@ -159,10 +159,44 @@ client.on("voiceStateUpdate", (oldState, newState) => {
     } else {
         // 記録がない場合は時間なしで退出メッセージのみ
         const vcName = oldState.channel.name;
-        const message = `${vcLink}から$**${userName}**が退出しました。 `;
+        const message = `${vcLink}から**${userName}**が退出しました。 `;
         logChannel.send(message);
         console.log(`${vcName}から${userName}が退出しました。`);
     }
+  }
+});
+
+// === VCステータスメッセージ変更検知 ===
+client.on("channelUpdate", async (oldChannel, newChannel) => {
+  try {
+    if (newChannel.type !== ChannelType.GuildVoice) return;
+
+    // 変更前・変更後のステータスメッセージを取得
+    const oldStatus = oldChannel.topic ?? "（未設定）";
+    const newStatus = newChannel.topic ?? "（未設定）";
+
+    if (oldStatus === newStatus) return;
+
+    const logChannel = newChannel.guild.channels.cache.get(VOICE_LOG_CHANNEL_ID);
+    if (!logChannel || !logChannel.isTextBased()) {
+      console.error(`VOICE_LOG_CHANNEL_ID (${VOICE_LOG_CHANNEL_ID}) のテキストチャンネルが見つかりません。`);
+      return;
+    }
+
+    // ログメッセージ作成
+    const vcLink = newChannel.toString(); // VCチャンネルへのリンク
+    const message = [
+      `${vcLink} のステータスメッセージが変更されました。`,
+      "```diff",
+      `- 前: ${oldStatus}`,
+      `+ 後: ${newStatus}`,
+      "```"
+    ].join("\n");
+
+    await logChannel.send(message);
+    console.log(`VCステータスメッセージが${newChannel.name}に変更されました`);
+  } catch (err) {
+    console.error("VCステータスメッセージ変更通知に失敗しました", err);
   }
 });
 
