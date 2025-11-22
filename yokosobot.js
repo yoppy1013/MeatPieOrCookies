@@ -81,7 +81,7 @@ client.on("voiceStateUpdate", (oldState, newState) => {
   
   const userName = member.user.tag; //ユーザ名
   const userId = member.id; // ユーザーIDをキーとして使用
-  const userMention = member.toString(); //ユーザメンション
+ // const userMention = member.toString(); //ユーザメンション
 
 
   //VC滞在時間を処理  
