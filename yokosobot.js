@@ -203,8 +203,8 @@ client.on("raw", async (packet) => {
     const message = [
       `${vcLink} のステータスメッセージが変更されました。`,
       "```diff",
-      `- 前: ${oldStatus}`,
-      `+ 後: ${newStatus}`,
+      `- ${oldStatus}`,
+      `+ ${newStatus}`,
       "```"
     ].join("\n");
 
