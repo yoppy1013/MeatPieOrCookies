@@ -112,7 +112,7 @@ client.on("voiceStateUpdate", (oldState, newState) => {
   if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
     // VCを退出したメッセージを送信
     const oldVcName = oldState.channel.name;
-    const leaveMessage = `${oldVcLink}から${userMention}が退出しました。 (通話時間: ${duration})`;
+    const leaveMessage = `${oldVcLink}から**${userName}**が退出しました。\n(通話時間: ${duration})`;
     logChannel.send(leaveMessage);
     console.log(`${oldVcName}から${userName}が退出しました。`);
 
@@ -122,7 +122,7 @@ client.on("voiceStateUpdate", (oldState, newState) => {
     const newVcLink = newState.channel.toString();
     const newVcName = newState.channel.name;
 
-    const joinMessage = `${newVcLink}に${userMention}が参加しました。`;
+    const joinMessage = `${newVcLink}に**${userName}**が参加しました。`;
     logChannel.send(joinMessage);
     console.log(`${newVcName}に${userName}が参加しました。`);
   } 
@@ -134,7 +134,7 @@ client.on("voiceStateUpdate", (oldState, newState) => {
     const vcName = newState.channel.name;
     const vcLink = newState.channel.toString();
 
-    const message = `${vcLink}に${userMention}が参加しました。`;
+    const message = `${vcLink}に**${userName}**が参加しました。`;
     
     logChannel.send(message);
     console.log(`${vcName}に${userName}が参加しました。`);
@@ -150,7 +150,7 @@ client.on("voiceStateUpdate", (oldState, newState) => {
       const vcName = oldState.channel.name;
 
 
-      const message = `${vcLink}から${userMention}が退出しました。 (通話時間: ${duration})`;
+      const message = `${vcLink}から**${userName}**が退出しました。\n(通話時間: ${duration})`;
       
       logChannel.send(message);
       console.log(`${vcName}から${userName}が退出しました。`);
@@ -159,7 +159,7 @@ client.on("voiceStateUpdate", (oldState, newState) => {
     } else {
         // 記録がない場合は時間なしで退出メッセージのみ
         const vcName = oldState.channel.name;
-        const message = `${vcLink}から${userMention}が退出しました。 `;
+        const message = `${vcLink}から$**${userName}**が退出しました。 `;
         logChannel.send(message);
         console.log(`${vcName}から${userName}が退出しました。`);
     }
