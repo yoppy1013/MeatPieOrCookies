@@ -20,6 +20,7 @@ const YONDENAI_IMAGE = "/home/yoppy3/discord-bot/images/yondenai.png";
 //変数
 let flag = 0; //画像送信フラグ
 const vcJoinTimes = new Map();
+const voiceStatusCache = new Map();
 // ===================
 
 const client = new Client({
@@ -156,30 +157,49 @@ else if (oldState.channelId && !newState.channelId) {
     vcJoinTimes.delete(userId); // 記録を削除
   } else {
     // 記録がない場合は時間なしで退出メッセージのみ
-    const message = `${vcLink}から**${userName}**が退出しました。`;
+    const message = `${vcLink}から**${userName}**が退出しました。\n(通話時間: 計測失敗)`;
     logChannel.send(message);
-    console.log(`${vcName}から${userName}が退出しました。(時間計測なし)`);
+    console.log(`${vcName}から${userName}が退出しました。(時間計測失敗)`);
   }
 }
 });
 
 // === VCステータスメッセージ変更検知 ===
-client.on("channelUpdate", async (oldChannel, newChannel) => {
+client.on("raw", async (packet) => {
+
+  if (packet.t !== "VOICE_CHANNEL_STATUS_UPDATE") return;
+
   try {
-    if (newChannel.type !== ChannelType.GuildVoice) return;
+    const data = packet.d;
+    const guildId = data.guild_id;
+    const channelId = data.id;
+    const newStatus = data.status ?? "（未設定）";
 
-    const oldStatus = oldChannel.topic ?? "（未設定）";
-    const newStatus = newChannel.topic ?? "（未設定）";
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) return;
 
-    if (oldStatus === newStatus) return;
-
-    const logChannel = newChannel.guild.channels.cache.get(VOICE_LOG_CHANNEL_ID);
+    const logChannel = guild.channels.cache.get(VOICE_LOG_CHANNEL_ID);
     if (!logChannel || !logChannel.isTextBased()) {
-      console.error(`VOICE_LOG_CHANNEL_ID (${VOICE_LOG_CHANNEL_ID}) のテキストチャンネルが見つかりません。`);
+      console.error(
+        `VOICE_LOG_CHANNEL_ID (${VOICE_LOG_CHANNEL_ID}) のテキストチャンネルが見つかりません。`
+      );
       return;
     }
 
-    const vcLink = newChannel.toString();
+    const vcChannel = guild.channels.cache.get(channelId);
+    const vcLink = vcChannel ? vcChannel.toString() : `<#${channelId}>`;
+    const vcName = vcChannel ? vcChannel.name : `ID: ${channelId}`;
+
+    // 直前のステータス
+    const oldStatus = voiceStatusCache.get(channelId) ?? "（未設定）";
+
+    // 変化がないなら何もしない
+    if (oldStatus === newStatus) return;
+
+    // キャッシュを更新
+    voiceStatusCache.set(channelId, newStatus);
+
+    // ログメッセージ
     const message = [
       `${vcLink} のステータスメッセージが変更されました。`,
       "```diff",
@@ -189,9 +209,11 @@ client.on("channelUpdate", async (oldChannel, newChannel) => {
     ].join("\n");
 
     await logChannel.send(message);
-    console.log(`VCステータスメッセージが${newChannel.name}に変更されました`);
+    console.log(
+      `${vcName} のステータスメッセージが 「${oldStatus}」から「${newStatus}」に変更されました`
+    );
   } catch (err) {
-    console.error("VCステータスメッセージ変更通知に失敗しました", err);
+    console.error("VCステータスメッセージ変更の通知に失敗しました", err);
   }
 });
 
