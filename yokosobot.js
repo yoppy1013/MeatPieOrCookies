@@ -51,7 +51,7 @@ client.on("guildMemberAdd", async (member) => {
     await channel.send(
       "ようこそいらいしゃい！みんな来ると思ってミートパイを焼いてたの！それともクッキーがいいかしら？"
     );
-	  console.log(`${member.user.tag}に提案しました。`);
+    console.log(`${member.user.tag}に提案しました。`);
   } else {
     console.error("WELCOME_CHANNEL_ID のチャンネルが見つかりません");
   }
@@ -69,10 +69,9 @@ client.on("guildMemberAdd", async (member) => {
 
 // VC状態変化イベント
 client.on("voiceStateUpdate", (oldState, newState) => {
-  // ボットが接続しているギルド内のVCの変更を処理
   const member = newState.member || oldState.member;
+  if (!member) return;
   
-  // ログを送信するテキストチャンネルを取得
   const logChannel = member.guild.channels.cache.get(VOICE_LOG_CHANNEL_ID);
   if (!logChannel) {
     console.error(`VOICE_LOG_CHANNEL_ID (${VOICE_LOG_CHANNEL_ID}) のチャンネルが見つかりません。`);
@@ -81,15 +80,12 @@ client.on("voiceStateUpdate", (oldState, newState) => {
   
   const userName = member.user.tag; //ユーザ名
   const userId = member.id; // ユーザーIDをキーとして使用
- // const userMention = member.toString();
 
-
-  //VC滞在時間を処理  
+  // VC滞在時間を処理  
   const calculateDuration = (startTime) => {
     const durationMs = Date.now() - startTime;
     const seconds = Math.floor(durationMs / 1000);
 
-    // 0秒未満
     if (seconds < 0) return "0秒"; 
 
     const hours = Math.floor(seconds / 3600);
@@ -99,25 +95,30 @@ client.on("voiceStateUpdate", (oldState, newState) => {
     let timeString = [];
     if (hours > 0) timeString.push(`${hours}時間`);
     if (minutes > 0) timeString.push(`${minutes}分`);
-    
-    // VC滞在時間が0分0秒の場合は秒を表示し、それ以外で秒が0の場合は表示しない
     if (remainingSeconds > 0 || (hours === 0 && minutes === 0)) {
-        timeString.push(`${remainingSeconds}秒`);
+      timeString.push(`${remainingSeconds}秒`);
     }
-    
     return timeString.join('');
   };
 
-  // ===VC間の移動 (oldStateとnewState両方にチャンネルIDがあり、IDが異なる場合)===
+  // ===VC間の移動===
   if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
-    // VCを退出したメッセージを送信
+    const oldVcLink = oldState.channel.toString();
     const oldVcName = oldState.channel.name;
-    const leaveMessage = `${oldVcLink}から**${userName}**が退出しました。\n(通話時間: ${duration})`;
-    logChannel.send(leaveMessage);
-    console.log(`${oldVcName}から${userName}が退出しました。`);
 
-    // VCに参加したメッセージを送信
-    vcJoinTimes.set(userId, Date.now()); //時間測定開始
+    let durationText = "";
+    if (vcJoinTimes.has(userId)) {
+      const startTime = vcJoinTimes.get(userId);
+      const duration = calculateDuration(startTime);
+      durationText = `\n(通話時間: ${duration})`;
+    }
+
+    const leaveMessage = `${oldVcLink}から**${userName}**が移動しました。${durationText}`;
+    logChannel.send(leaveMessage);
+    console.log(`${oldVcName}から${userName}が移動しました。`);
+
+    // 新しいVCでの時間計測を開始
+    vcJoinTimes.set(userId, Date.now());
 
     const newVcLink = newState.channel.toString();
     const newVcName = newState.channel.name;
@@ -127,41 +128,36 @@ client.on("voiceStateUpdate", (oldState, newState) => {
     console.log(`${newVcName}に${userName}が参加しました。`);
   } 
 
-  // ===VCへの参加 (oldStateにチャンネルがなく、newStateにチャンネルがある)===
+  // ===VCへの参加===
   else if (!oldState.channelId && newState.channelId) {
     vcJoinTimes.set(userId, Date.now()); //時間測定開始
 
     const vcName = newState.channel.name;
     const vcLink = newState.channel.toString();
-
     const message = `${vcLink}に**${userName}**が参加しました。`;
     
     logChannel.send(message);
     console.log(`${vcName}に${userName}が参加しました。`);
   } 
 
-  // ===VCからの退出 (oldStateにチャンネルがあり、newStateにチャンネルがない)===
+  // ===VCからの退出===
   else if (oldState.channelId && !newState.channelId) {
+    const vcLink = oldState.channel.toString();
+    const vcName = oldState.channel.name;
+
     if (vcJoinTimes.has(userId)) {
       const startTime = vcJoinTimes.get(userId);
       const duration = calculateDuration(startTime);
-      
-      const vcLink = oldState.channel.toString(); 
-      const vcName = oldState.channel.name;
-
 
       const message = `${vcLink}から**${userName}**が退出しました。\n(通話時間: ${duration})`;
-      
       logChannel.send(message);
-      console.log(`${vcName}から${userName}が退出しました。`);
+      console.log(`${vcName}から${userName}が退出しました。(通話時間: ${duration})`);
       
       vcJoinTimes.delete(userId); // 記録を削除
     } else {
-        // 記録がない場合は時間なしで退出メッセージのみ
-        const vcName = oldState.channel.name;
-        const message = `${vcLink}から**${userName}**が退出しました。 `;
-        logChannel.send(message);
-        console.log(`${vcName}から${userName}が退出しました。`);
+      const message = `${vcLink}から**${userName}**が退出しました。`;
+      logChannel.send(message);
+      console.log(`${vcName}から${userName}が退出しました。(時間計測なし)`);
     }
   }
 });
@@ -171,7 +167,6 @@ client.on("channelUpdate", async (oldChannel, newChannel) => {
   try {
     if (newChannel.type !== ChannelType.GuildVoice) return;
 
-    // 変更前・変更後のステータスメッセージを取得
     const oldStatus = oldChannel.topic ?? "（未設定）";
     const newStatus = newChannel.topic ?? "（未設定）";
 
@@ -183,8 +178,7 @@ client.on("channelUpdate", async (oldChannel, newChannel) => {
       return;
     }
 
-    // ログメッセージ作成
-    const vcLink = newChannel.toString(); // VCチャンネルへのリンク
+    const vcLink = newChannel.toString();
     const message = [
       `${vcLink} のステータスメッセージが変更されました。`,
       "```diff",
@@ -202,69 +196,57 @@ client.on("channelUpdate", async (oldChannel, newChannel) => {
 
 // ~~~DM処理~~~
 
-// DM で話しかけられたときの処理
 client.on("messageCreate", async (message) => {
-  // Bot 自身や他の Bot のメッセージには反応しない
   if (message.author.bot) return;
-
 
   // メンションされたかチェック
   if (message.mentions.has(client.user)) {
     try {
-      await message.channel.send({
-        files: [MENTION_IMAGE],
-      });
+      await message.channel.send({ files: [MENTION_IMAGE] });
       console.log(`${message.author.tag}からのメンションによりオフロスキーを送信しました`);
-	    return;
+      return;
     } catch (err) {
       console.error(`${message.author.tag}からのメンションによるオフロスキーの送信に失敗しました`, err);
     }
   }
 
- //文字列に反応
- //文字列定義
-	const ofurosuki_words = ["オフロスキ","おふろすき","ｵﾌﾛｽｷ","ofurosuki","ohurosuki","offrosky","OFUROSUKI","Ofurosuki","Ohurosuki","OHUROSUKI"];
+  // 文字列に反応
+  const ofurosuki_words = ["オフロスキ","おふろすき","ｵﾌﾛｽｷ","ofurosuki","ohurosuki","offrosky","OFUROSUKI","Ofurosuki","Ohurosuki","OHUROSUKI"];
   if (ofurosuki_words.some(w => message.content.includes(w))) {
-	try {
-		await message.channel.send({
-			files: [MENTION_IMAGE],
-		});
-    flag = 1;
-		console.log(`${message.author.tag}からの文字列により呼ばれたオフロスキーを送信しました`);
-	} catch (err) {
-		console.error(`${message.author.tag}からの文字列による呼ばれたオフロスキーの送信に失敗しました`, err);
-	}
-}
-
+    try {
+      await message.channel.send({ files: [MENTION_IMAGE] });
+      flag = 1;
+      console.log(`${message.author.tag}からの文字列により呼ばれたオフロスキーを送信しました`);
+    } catch (err) {
+      console.error(`${message.author.tag}からの文字列による呼ばれたオフロスキーの送信に失敗しました`, err);
+    }
+  }
 
   const yondenai_words = ["呼んでな","よんでな","ﾖﾝﾃﾞﾅ","yondena","Yondena","yomdena","YONDENA"];
   if (yondenai_words.some(w => message.content.includes(w))) {
-	try {
-		await message.channel.send({
-			files: [YONDENAI_IMAGE],
-		});
-    flag = 1;
-		console.log(`${message.author.tag}からの文字列により呼んでないオフロスキーを送信しました`);
-	} catch (err) {
-		console.error(`${message.author.tag}からの文字列による呼んでないオフロスキーの送信に失敗しました`, err);
-	}
-}
+    try {
+      await message.channel.send({ files: [YONDENAI_IMAGE] });
+      flag = 1;
+      console.log(`${message.author.tag}からの文字列により呼んでないオフロスキーを送信しました`);
+    } catch (err) {
+      console.error(`${message.author.tag}からの文字列による呼んでないオフロスキーの送信に失敗しました`, err);
+    }
+  }
 
-if (!message.guild && flag == 1){
-  flag = 0; 
-  return;
-}
+  if (!message.guild && flag === 1) {
+    flag = 0; 
+    return;
+  }
 
- // guild が null = DM チャット
+  // guild が null = DM チャット
   if (!message.guild) {
     await message.channel.send(
       "ようこそいらいっしゃい！みんな来ると思ってミートパイを焼いてたの！それともクッキーがいいかしら？"
     );
-	  console.log(`${message.author.tag}のDMで反応しました`);
+    console.log(`${message.author.tag}のDMで反応しました`);
     flag = 0;
   }
 });
 
 // Bot ログイン
 client.login(TOKEN);
-
