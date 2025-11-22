@@ -174,6 +174,10 @@ client.on("raw", async (packet) => {
     const guildId = data.guild_id;
     const channelId = data.id;
     const newStatus = data.status ?? "（未設定）";
+    
+    if (newStatus === "（未設定）") {
+      return;
+    }
 
     const guild = client.guilds.cache.get(guildId);
     if (!guild) return;
