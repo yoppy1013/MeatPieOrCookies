@@ -451,7 +451,7 @@ if (message.guild) {
             : `検知: ${shown.map(h => h.member.displayName).join(" / ")} （上位10人を表示）`,
         embeds: shown.map(h => ({
           title: h.member.displayName,
-          description: `@${h.member.user.username}（一致: ${h.matched}）`,
+          description: `@${h.member.user.username}（${h.matched}）`,
           thumbnail: { url: h.member.displayAvatarURL({ size: 256 }) }
         }))
       });
