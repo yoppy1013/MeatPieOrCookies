@@ -410,8 +410,9 @@ if (message.content.includes("めしてろ")) {
           return;
     }
     //画像送信
+    flag =1;
     const sent = await message.channel.send({
-      flag =1;
+
       content: "めしてろします。",
       files: [picked.url],
     });
@@ -435,8 +436,8 @@ if (message.guild) {
       const MAX_EMBEDS = 10;
       const shown = filtered.slice(0, MAX_EMBEDS);
 
+      flag = 1;
       await message.channel.send({
-        flag = 1;
         content:
           shown.length === filtered.length
             ? `検知: ${shown.map(h => h.member.displayName).join(" / ")}`
