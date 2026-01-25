@@ -143,6 +143,63 @@ async function getRandomFoodImageUrl(guild) {
   return picked;
 }
 
+
+// メンバー名を含むメッセージからメンバーを探す
+async function findMembersByContainedName(guild, content) {
+  if (!guild || !content) return [];
+
+  const text = content;
+  const MIN_LEN = 3;
+
+  const matchFromCollection = (collection) => {
+    const hits = [];
+    for (const m of collection.values()) {
+      const dn = m.displayName || "";
+      const un = m.user?.username || "";
+      if (dn.length >= MIN_LEN && text.includes(dn)) {
+        hits.push({ member: m, matched: dn, kind: "displayName" });
+        continue;
+      }
+      if (un.length >= MIN_LEN && text.includes(un)) {
+        hits.push({ member: m, matched: un, kind: "username" });
+      }
+    }
+    return hits;
+  };
+
+  // まずキャッシュで探す
+  let hits = matchFromCollection(guild.members.cache);
+
+  // キャッシュで見つかったらそれを返す
+  if (hits.length > 0) {
+    // 重複排除
+    const uniq = new Map();
+    for (const h of hits) {
+      if (!uniq.has(h.member.id)) uniq.set(h.member.id, h);
+    }
+    return [...uniq.values()];
+  }
+
+  // 見つからない場合だけ、全員フェッチして探す
+  const now = Date.now();
+  const last = lastMemberFetchAt.get(guild.id) ?? 0;
+  const COOLDOWN_MS = 60_000;
+  if (now - last < COOLDOWN_MS) return [];
+  lastMemberFetchAt.set(guild.id, now);
+
+  const fetched = await guild.members.fetch().catch(() => null);
+  if (!fetched) return [];
+
+  hits = matchFromCollection(fetched);
+
+  // 重複排除
+  const uniq = new Map();
+  for (const h of hits) {
+    if (!uniq.has(h.member.id)) uniq.set(h.member.id, h);
+  }
+  return [...uniq.values()];
+}
+
 //~~~VC処理~~~
 
 // VC状態変化イベント
@@ -155,6 +212,8 @@ client.on("voiceStateUpdate", (oldState, newState) => {
     console.error(`VOICE_LOG_CHANNEL_ID (${VOICE_LOG_CHANNEL_ID}) のチャンネルが見つかりません。`);
     return;
   }
+
+  
   
   const userName = member.user.tag; //ユーザ名
   const userId = member.id; // ユーザーIDをキーとして使用
@@ -348,22 +407,55 @@ if (message.content.includes("めしてろ")) {
     const picked = await getRandomFoodImageUrl(message.guild);
     if (!picked) {
       await message.channel.send("めしてろ画像が見つかりませんでした。");
-      return;
+          return;
     }
     //画像送信
     const sent = await message.channel.send({
+      flag =1;
       content: "めしてろします。",
       files: [picked.url],
     });
-    return;
   } catch (err) {
     console.error("めしてろに失敗しました。", err);
     await message.channel.send("めしてろに失敗しました。");
-    return;
   }
 }
 
 
+// === 名前文字列に反応してアイコンを表示（複数対応） ===
+if (message.guild) {
+  try {
+    const hits = await findMembersByContainedName(message.guild, message.content);
+
+    // Bot自身を除外
+    const filtered = hits.filter(h => !h.member.user.bot);
+
+    if (filtered.length > 0) {
+      // 1メッセージで最大10人まで
+      const MAX_EMBEDS = 10;
+      const shown = filtered.slice(0, MAX_EMBEDS);
+
+      await message.channel.send({
+        flag = 1;
+        content:
+          shown.length === filtered.length
+            ? `検知: ${shown.map(h => h.member.displayName).join(" / ")}`
+            : `検知: ${shown.map(h => h.member.displayName).join(" / ")} （上位10人を表示）`,
+        embeds: shown.map(h => ({
+          title: h.member.displayName,
+          description: `@${h.member.user.username}（一致: ${h.matched}）`,
+          thumbnail: { url: h.member.displayAvatarURL({ size: 256 }) }
+        }))
+      });
+
+      console.log(
+        `[NAME_ICON] 検知 ${filtered.length}人: ${filtered.map(h => h.member.user.tag).join(", ")}`
+      );
+    }
+  } catch (e) {
+    console.error("名前検知→アイコン表示でエラーが発生しました。", e);
+  }
+}
 
   if (!message.guild && flag === 1) {
     flag = 0; 
