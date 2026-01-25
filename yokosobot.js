@@ -145,42 +145,51 @@ async function getRandomFoodImageUrl(guild) {
 
 
 // メンバー名を含むメッセージからメンバーを探す
+function norm(s) {
+  // 全角半角ゆれ等を寄せる + 小文字化（英字用）
+  return (s ?? "").toString().normalize("NFKC").toLowerCase();
+}
+
+// 「本文に含まれているメンバー」を探す
 async function findMembersByContainedName(guild, content) {
   if (!guild || !content) return [];
 
-  const text = content;
-  const MIN_LEN = 3;
+  const text = norm(content);
+
+  const MIN_LEN = 0; // 最小マッチ長
 
   const matchFromCollection = (collection) => {
     const hits = [];
     for (const m of collection.values()) {
-      const dn = m.displayName || "";
-      const un = m.user?.username || "";
-      if (dn.length >= MIN_LEN && text.includes(dn)) {
-        hits.push({ member: m, matched: dn, kind: "displayName" });
-        continue;
-      }
-      if (un.length >= MIN_LEN && text.includes(un)) {
-        hits.push({ member: m, matched: un, kind: "username" });
+      const names = [
+        m.nickname,                 // サーバニックネーム（未設定なら null）
+        m.displayName,              // ギルド表示名
+        m.user?.globalName,         // グローバル表示名
+        m.user?.username,           // ユーザー名
+      ]
+        .filter(Boolean)
+        .map(norm);
+
+      // 同一メンバー内でも重複名が出るので uniq
+      const uniqNames = [...new Set(names)];
+
+      const matched = uniqNames.find(n => n.length >= MIN_LEN && text.includes(n));
+      if (matched) {
+        hits.push({ member: m, matched });
       }
     }
     return hits;
   };
 
-  // まずキャッシュで探す
+  // まずキャッシュ
   let hits = matchFromCollection(guild.members.cache);
-
-  // キャッシュで見つかったらそれを返す
   if (hits.length > 0) {
-    // 重複排除
     const uniq = new Map();
-    for (const h of hits) {
-      if (!uniq.has(h.member.id)) uniq.set(h.member.id, h);
-    }
+    for (const h of hits) if (!uniq.has(h.member.id)) uniq.set(h.member.id, h);
     return [...uniq.values()];
   }
 
-  // 見つからない場合だけ、全員フェッチして探す
+  // 見つからない時だけ全員fetch
   const now = Date.now();
   const last = lastMemberFetchAt.get(guild.id) ?? 0;
   const COOLDOWN_MS = 60_000;
@@ -192,13 +201,11 @@ async function findMembersByContainedName(guild, content) {
 
   hits = matchFromCollection(fetched);
 
-  // 重複排除
   const uniq = new Map();
-  for (const h of hits) {
-    if (!uniq.has(h.member.id)) uniq.set(h.member.id, h);
-  }
+  for (const h of hits) if (!uniq.has(h.member.id)) uniq.set(h.member.id, h);
   return [...uniq.values()];
 }
+
 
 //~~~VC処理~~~
 
