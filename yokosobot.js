@@ -17,6 +17,9 @@ const ROLE_ID = "1439924125685649459";
 const MENTION_IMAGE = "/home/yoppy3/discord-bot/images/mention.png";
 const YONDENAI_IMAGE = "/home/yoppy3/discord-bot/images/yondenai.png";
 
+//画像抽出元
+const MESHI_CHANNEL_ID = "1439927223590195262";
+
 //変数
 let flag = 0; //画像送信フラグ
 const vcJoinTimes = new Map();
@@ -65,6 +68,80 @@ client.on("guildMemberAdd", async (member) => {
     console.error(`ロールID「${ROLE_ID}」の ${member.user.tag} への付与に失敗しました`, err);
   }
 });
+
+function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// メッセージから投稿できそうな画像URLを全部拾う
+function extractImageUrls(msg) {
+  const urls = [];
+
+  // 添付ファイル
+  for (const att of msg.attachments.values()) {
+    const ct = att.contentType || "";
+    const name = (att.name || "").toLowerCase();
+    const isImage =
+      ct.startsWith("image/") ||
+      name.endsWith(".png") ||
+      name.endsWith(".jpg") ||
+      name.endsWith(".jpeg") ||
+      name.endsWith(".gif") ||
+      name.endsWith(".webp");
+    if (isImage) urls.push(att.url);
+  }
+
+  // 埋め込み
+  for (const emb of msg.embeds) {
+    if (emb.image?.url) urls.push(emb.image.url);
+    if (emb.thumbnail?.url) urls.push(emb.thumbnail.url);
+  }
+
+  // 本文の直URL
+  const text = msg.content || "";
+  const re = /(https?:\/\/\S+\.(?:png|jpg|jpeg|gif|webp))(?:\?\S*)?/gi;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    urls.push(m[1]);
+  }
+
+  return urls;
+}
+
+
+// 指定チャンネルから過去ログを掘って画像1枚を返す（見つからなければ null）
+async function getRandomFoodImageUrl(guild) {
+  const ch = await guild.channels.fetch(MESHI_CHANNEL_ID).catch(() => null);
+  if (!ch || !ch.isTextBased()) return null;
+
+
+  const MAX_PAGES = 10;
+  const PAGE_SIZE = 100;
+
+  let before;
+  const candidates = [];
+
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const messages = await ch.messages.fetch({ limit: PAGE_SIZE, before }).catch(() => null);
+    if (!messages || messages.size === 0) break;
+
+    for (const msg of messages.values()) {
+      const urls = extractImageUrls(msg);
+      for (const url of urls) {
+        candidates.push({ url, jumpLink: msg.url });
+      }
+    }
+
+    before = messages.last().id;
+
+    if (candidates.length >= 200) break;
+  }
+
+  if (candidates.length === 0) return null;
+
+  const picked = pickRandom(candidates);
+  return picked;
+}
 
 //~~~VC処理~~~
 
@@ -260,6 +337,34 @@ client.on("messageCreate", async (message) => {
     }
   }
 
+ // 「めしてろ」: 特定チャンネルから画像をランダム抽出して1枚投稿
+if (message.content.includes("めしてろ")) {
+  if (!message.guild) {
+    await message.channel.send("本機能はサーバでのみで使用できます。");
+    return;
+  }
+
+  try {
+    const picked = await getRandomFoodImageUrl(message.guild);
+    if (!picked) {
+      await message.channel.send("めしてろ画像が見つかりませんでした。");
+      return;
+    }
+    //画像送信
+    const sent = await message.channel.send({
+      content: "めしてろします。",
+      files: [picked.url],
+    });
+    return;
+  } catch (err) {
+    console.error("めしてろに失敗しました。", err);
+    await message.channel.send("めしてろに失敗しました。");
+    return;
+  }
+}
+
+
+
   if (!message.guild && flag === 1) {
     flag = 0; 
     return;
@@ -274,6 +379,9 @@ client.on("messageCreate", async (message) => {
     flag = 0;
   }
 });
+
+
+
 
 // Bot ログイン
 client.login(TOKEN);
