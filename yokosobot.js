@@ -25,6 +25,7 @@ const SAKE_CHANNEL_ID = "1461713509044850728";
 let flag = 0; //画像送信フラグ
 const vcJoinTimes = new Map();
 const voiceStatusCache = new Map();
+const lastMemberFetchAt = new Map();
 // ===================
 
 const client = new Client({
@@ -111,17 +112,9 @@ function extractImageUrls(msg) {
 
 
 // 指定チャンネルから過去ログを掘って画像1枚を返す（見つからなければ null）
-async function getRandomFoodImageUrl(guild) {
-  const ch = null;
-  if(guild == "めしてろ"){
-   ch  = await guild.channels.fetch(MESHI_CHANNEL_ID).catch(() => null);
-  }
-  else if(guild == "酒"){
-   ch  = await guild.channels.fetch(SAKE_CHANNEL_ID).catch(() => null);
-  }
-
+async function getRandomImageUrlFromChannel(guild, channelId) {
+  const ch = await guild.channels.fetch(channelId).catch(() => null);
   if (!ch || !ch.isTextBased()) return null;
-
 
   const MAX_PAGES = 10;
   const PAGE_SIZE = 100;
@@ -139,16 +132,12 @@ async function getRandomFoodImageUrl(guild) {
         candidates.push({ url, jumpLink: msg.url });
       }
     }
-
     before = messages.last().id;
-
     if (candidates.length >= 200) break;
   }
 
   if (candidates.length === 0) return null;
-
-  const picked = pickRandom(candidates);
-  return picked;
+  return pickRandom(candidates);
 }
 
 
@@ -419,7 +408,7 @@ if (message.content.includes("めしてろ")) {
   }
 
   try {
-    const picked = await getRandomFoodImageUrl(message.guild);
+    const picked = await getRandomImageUrlFromChannel(message.guild, MESHI_CHANNEL_ID);
     if (!picked) {
       await message.channel.send("めしてろ画像が見つかりませんでした。");
           return;
@@ -445,7 +434,7 @@ if (message.content.includes("酒")) {
   }
 
   try {
-    const picked = await getRandomFoodImageUrl(message.guild);
+const picked = await getRandomImageUrlFromChannel(message.guild, SAKE_CHANNEL_ID);
     if (!picked) {
       await message.channel.send(":gahaha: 失敗");
           return;
