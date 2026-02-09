@@ -436,19 +436,19 @@ if (message.content.includes("酒")) {
   try {
 const picked = await getRandomImageUrlFromChannel(message.guild, SAKE_CHANNEL_ID);
     if (!picked) {
-      await message.channel.send(":gahaha: 失敗");
+      await message.channel.send("ガハハ！失敗…");
           return;
     }
     //画像送信
     flag =1;
     const sent = await message.channel.send({
 
-      content: ":gahaha:",
+      content: "ガハハ！",
       files: [picked.url],
     });
   } catch (err) {
     console.error("酒の送信に失敗しました。", err);
-    await message.channel.send(":gahaha: 失敗");
+    await message.channel.send("ガハハ！失敗…");
   }
 }
 
