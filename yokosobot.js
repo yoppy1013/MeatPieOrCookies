@@ -19,6 +19,7 @@ const YONDENAI_IMAGE = "/home/yoppy3/discord-bot/images/yondenai.png";
 
 //画像抽出元
 const MESHI_CHANNEL_ID = "1439927223590195262";
+const SAKE_CHANNEL_ID = "1461713509044850728";
 
 //変数
 let flag = 0; //画像送信フラグ
@@ -111,7 +112,14 @@ function extractImageUrls(msg) {
 
 // 指定チャンネルから過去ログを掘って画像1枚を返す（見つからなければ null）
 async function getRandomFoodImageUrl(guild) {
-  const ch = await guild.channels.fetch(MESHI_CHANNEL_ID).catch(() => null);
+  const ch = null;
+  if(guild == "めしてろ"){
+   ch  = await guild.channels.fetch(MESHI_CHANNEL_ID).catch(() => null);
+  }
+  else if(guild == "酒"){
+   ch  = await guild.channels.fetch(SAKE_CHANNEL_ID).catch(() => null);
+  }
+
   if (!ch || !ch.isTextBased()) return null;
 
 
@@ -426,6 +434,32 @@ if (message.content.includes("めしてろ")) {
   } catch (err) {
     console.error("めしてろに失敗しました。", err);
     await message.channel.send("めしてろに失敗しました。");
+  }
+}
+
+ // 「酒」: 特定チャンネルから画像をランダム抽出して1枚投稿
+if (message.content.includes("酒")) {
+  if (!message.guild) {
+    await message.channel.send("本機能はサーバでのみで使用できます。");
+    return;
+  }
+
+  try {
+    const picked = await getRandomFoodImageUrl(message.guild);
+    if (!picked) {
+      await message.channel.send(":gahaha: 失敗");
+          return;
+    }
+    //画像送信
+    flag =1;
+    const sent = await message.channel.send({
+
+      content: ":gahaha:",
+      files: [picked.url],
+    });
+  } catch (err) {
+    console.error("酒の送信に失敗しました。", err);
+    await message.channel.send(":gahaha: 失敗");
   }
 }
 
