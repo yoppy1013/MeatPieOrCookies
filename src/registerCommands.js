@@ -23,7 +23,7 @@ module.exports = async function registerCommands(token, appId) {
       .setName("sake")
       .setDescription("このチャンネルに酒画像を投稿する"),
 
-    // ✅ 許可追加
+    // 許可追加
     new SlashCommandBuilder()
       .setName("roll")
       .setDescription("コマンド実行を許可するロール/ユーザーを追加する")
@@ -31,7 +31,7 @@ module.exports = async function registerCommands(token, appId) {
         opt.setName("target").setDescription("ロール or ユーザー").setRequired(true)
       ),
 
-    // ✅ 許可剥奪
+    // 許可剥奪
     new SlashCommandBuilder()
       .setName("deroll")
       .setDescription("コマンド実行の許可をロール/ユーザーから剥奪する")
@@ -39,7 +39,7 @@ module.exports = async function registerCommands(token, appId) {
         opt.setName("target").setDescription("ロール or ユーザー").setRequired(true)
       ),
 
-    // ✅ 抽出元設定
+    // 抽出元設定
     new SlashCommandBuilder()
       .setName("source_meshi")
       .setDescription("めしてろの抽出元チャンネルを設定")
