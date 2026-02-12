@@ -6,6 +6,8 @@ const onGuildMemberAdd = require("./handlers/onGuildMemberAdd");
 const onVoiceStateUpdate = require("./handlers/onVoiceStateUpdate");
 const onVoiceChannelStatusUpdate = require("./handlers/onVoiceChannelStatusUpdate");
 const onMessageCreate = require("./handlers/onMessageCreate");
+const registerCommands = require("./registerCommands");
+const onInteractionCreate = require("./handlers/onInteractionCreate");
 
 console.log("TOKENの読込に成功しました");
 
@@ -21,9 +23,12 @@ const client = new Client({
   partials: [Partials.Channel],
 });
 
-client.once("ready", () => {
+client.once("ready", async () => {
   console.log(`サーバに接続しました: ${client.user.tag}`);
+
+  await registerCommands(cfg.TOKEN, cfg.APP_ID);
 });
+client.on("interactionCreate", onInteractionCreate(cfg));
 
 client.on("guildMemberAdd", onGuildMemberAdd(cfg));
 

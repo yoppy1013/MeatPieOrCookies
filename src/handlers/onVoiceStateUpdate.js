@@ -1,11 +1,19 @@
-module.exports = function onVoiceStateUpdate({ VOICE_LOG_CHANNEL_ID, vcJoinTimes }) {
+const { getGuildSettings } = require("../store/guildSettings");
+
+module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
   return (oldState, newState) => {
     const member = newState.member || oldState.member;
     if (!member) return;
 
-    const logChannel = member.guild.channels.cache.get(VOICE_LOG_CHANNEL_ID);
+    const settings = getGuildSettings(member.guild.id);
+    const logChannelId = settings.voiceLogChannelId;
+
+    if (!logChannelId) return; // /voice で設定されるまでログを送らない
+
+    const logChannel = member.guild.channels.cache.get(logChannelId);
+    if (!logChannel || !logChannel.isTextBased()) return;
     if (!logChannel) {
-      console.error(`VOICE_LOG_CHANNEL_ID (${VOICE_LOG_CHANNEL_ID}) のチャンネルが見つかりません。`);
+      console.error(`${logChannelId}が見つかりません。`);
       return;
     }
 

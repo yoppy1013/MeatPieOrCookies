@@ -1,5 +1,6 @@
 const getRandomImageUrlFromChannel = require("../utils/getRandomImageUrlFromChannel");
 const { findMembersByContainedName } = require("../utils/memberMatch");
+const { getGuildSettings } = require("../store/guildSettings");
 
 module.exports = function onMessageCreate({
   client,
@@ -34,46 +35,72 @@ module.exports = function onMessageCreate({
     }
 
     // めしてろ
-    if (message.content.includes("めしてろ")) {
-      if (!message.guild) {
-        await message.channel.send("本機能はサーバでのみで使用できます。");
-        return;
-      }
+ if (message.content.includes("めしてろ")) {
+  if (!message.guild) {
+    await message.channel.send("本機能はサーバでのみで使用できます。");
+    return;
+  }
 
-      try {
-        const picked = await getRandomImageUrlFromChannel(message.guild, MESHI_CHANNEL_ID);
-        if (!picked) {
-          await message.channel.send("めしてろ画像が見つかりませんでした。");
-          return;
-        }
-        flag = 1;
-        await message.channel.send({ content: "めしてろします。", files: [picked.url] });
-      } catch (err) {
-        console.error("めしてろに失敗しました。", err);
-        await message.channel.send("めしてろに失敗しました。");
-      }
+  const settings = getGuildSettings(message.guild.id);
+  const srcId = settings.sourceMeshiChannelId;
+
+  if (!srcId) {
+    await message.channel.send("めしてろ画像抽出元が未設定です。管理者に問い合わせてください。");
+    return;
+  }
+
+  try {
+    const picked = await getRandomImageUrlFromChannel(message.guild, srcId);
+    if (!picked) {
+      await message.channel.send("めしてろ画像が見つかりませんでした。");
+      return;
     }
+
+    flag = 1;
+    await message.channel.send({
+      content: "めしてろします。",
+      files: [picked.url],
+    });
+  } catch (err) {
+    console.error("めしてろに失敗しました。", err);
+    await message.channel.send("めしてろに失敗しました。");
+  }
+}
+
 
     // 酒
-    if (message.content.includes("酒")) {
-      if (!message.guild) {
-        await message.channel.send("本機能はサーバでのみで使用できます。");
-        return;
-      }
+if (message.content.includes("酒")) {
+  if (!message.guild) {
+    await message.channel.send("本機能はサーバでのみで使用できます。");
+    return;
+  }
 
-      try {
-        const picked = await getRandomImageUrlFromChannel(message.guild, SAKE_CHANNEL_ID);
-        if (!picked) {
-          await message.channel.send("ガハハ！失敗…");
-          return;
-        }
-        flag = 1;
-        await message.channel.send({ content: "ガハハ！", files: [picked.url] });
-      } catch (err) {
-        console.error("酒の送信に失敗しました。", err);
-        await message.channel.send("ガハハ！失敗…");
-      }
+  const settings = getGuildSettings(message.guild.id);
+  const srcId = settings.sourceSakeChannelId;
+
+  if (!srcId) {
+    await message.channel.send("酒画像抽出元が未設定です。管理者に問い合わせてください。");
+    return;
+  }
+
+  try {
+    const picked = await getRandomImageUrlFromChannel(message.guild, srcId);
+    if (!picked) {
+      await message.channel.send("ガハハ！失敗…");
+      return;
     }
+
+    flag = 1;
+    await message.channel.send({
+      content: "ガハハ！",
+      files: [picked.url],
+    });
+  } catch (err) {
+    console.error("酒の送信に失敗しました。", err);
+    await message.channel.send("ガハハ！失敗…");
+  }
+}
+  
 
     // 名前検知→アイコン
     if (message.guild) {
