@@ -38,7 +38,7 @@ module.exports = async function registerCommands(token, appId) {
     // 抽出元設定
     new SlashCommandBuilder()
       .setName("meshitero")
-      .setDescription("めしてろの抽出元チャンネルを設定")
+      .setDescription("このチャンネルからめしてろをする")
       .addChannelOption(opt =>
         opt
           .setName("channel")
@@ -49,7 +49,7 @@ module.exports = async function registerCommands(token, appId) {
 
     new SlashCommandBuilder()
       .setName("sake")
-      .setDescription("酒の抽出元チャンネルを設定")
+      .setDescription("このチャンネルからガハハ！をする")
       .addChannelOption(opt =>
         opt
           .setName("channel")

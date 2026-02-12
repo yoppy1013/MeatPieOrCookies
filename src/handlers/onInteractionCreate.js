@@ -1,4 +1,3 @@
-const getRandomImageUrlFromChannel = require("../utils/getRandomImageUrlFromChannel");
 const isAllowed = require("../utils/isAllowed");
 const {
   setGuildSetting,
@@ -13,7 +12,7 @@ module.exports = function onInteractionCreate({  }) {
     if (!interaction.isChatInputCommand()) return;
 
     if (!interaction.guild) {
-      await interaction.reply({ content: "サーバ内で使ってください。", ephemeral: true });
+      await interaction.reply({ content: "サーバ内で使ってください。", flags: MessageFlags.Ephemeral });
       return;
     }
 
@@ -30,7 +29,7 @@ module.exports = function onInteractionCreate({  }) {
     ]);
 
     if (needsAllow.has(interaction.commandName) && !isAllowed(interaction)) {
-      await interaction.reply({ content: "このコマンドを実行する権限がありません", ephemeral: true });
+      await interaction.reply({ content: "このコマンドを実行する権限がありません", flags: MessageFlags.Ephemeral });
       return;
     }
 
@@ -47,7 +46,7 @@ module.exports = function onInteractionCreate({  }) {
     // VCログ先
     if (interaction.commandName === "voice") {
       setGuildSetting(interaction.guildId, "voiceLogChannelId", ch.id);
-      await interaction.reply({ content: ` ${ch}をVCログ送信先に設定しました`, ephemeral: true });
+      await interaction.reply({ content: ` ${ch}をVCログ送信先に設定しました`, flags: MessageFlags.Ephemeral });
       return;
     }
 
@@ -101,16 +100,14 @@ module.exports = function onInteractionCreate({  }) {
   }
     // 抽出元
     if (interaction.commandName === "meshitero") {
-      const src = interaction.options.getChannel("channel", true);
-      setGuildSetting(interaction.guildId, "sourceMeshiChannelId", src.id);
-      await interaction.reply({ content: `めしてろ抽出元を設定しました: ${src}`, ephemeral: true });
+    setGuildSetting(interaction.guildId, "sourceMeshiChannelId", interaction.channelId);
+      await interaction.reply({ content: `めしてろ抽出元をこのチャンネルに設定しました`, flags: MessageFlags.Ephemeral });
       return;
     }
 
     if (interaction.commandName === "sake") {
-      const src = interaction.options.getChannel("channel", true);
-      setGuildSetting(interaction.guildId, "sourceSakeChannelId", src.id);
-      await interaction.reply({ content: `酒抽出元を設定しました: ${src}`, ephemeral: true });
+      setGuildSetting(interaction.guildId, "sourceSakeChannelId", interaction.channelId);
+      await interaction.reply({ content: `酒抽出元をこのチャンネルに設定しました`, flags: MessageFlags.Ephemeral });
       return;
     }
 
