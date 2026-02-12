@@ -40,24 +40,12 @@ module.exports = async function registerCommands(token, appId) {
     new SlashCommandBuilder()
       .setName("meshitero")
       .setDescription("このチャンネルからめしてろをする")
-      .addChannelOption(opt =>
-        opt
-          .setName("channel")
-          .setDescription("抽出元チャンネル")
-          .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
-          .setRequired(true)
-      ),
+    ,
 
     new SlashCommandBuilder()
       .setName("sake")
       .setDescription("このチャンネルからガハハ！をする")
-      .addChannelOption(opt =>
-        opt
-          .setName("channel")
-          .setDescription("抽出元チャンネル")
-          .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
-          .setRequired(true)
-      ),
+
   ].map(c => c.toJSON());
 
   const rest = new REST({ version: "10" }).setToken(token);
