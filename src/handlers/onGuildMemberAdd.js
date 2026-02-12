@@ -4,7 +4,7 @@ module.exports = function onGuildMemberAdd(ROLE_ID) {
   return async (member) => {
     const settings = getGuildSettings(member.guild.id);
     const chId = settings.welcomeChannelId;
-    if (!chId) return; // 未設定なら何もしない（または既定チャンネルに送る）
+    if (!chId) return; // 未設定なら何もしない
 
     const channel = member.guild.channels.cache.get(chId);
     if (!channel || !channel.isTextBased()) return;

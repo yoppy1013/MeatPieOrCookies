@@ -2,7 +2,6 @@ const getRandomImageUrlFromChannel = require("../utils/getRandomImageUrlFromChan
 const isAllowed = require("../utils/isAllowed");
 const {
   setGuildSetting,
-  getGuildSettings,
   addToGuildList,
   removeFromGuildList,
 } = require("../store/guildSettings");
