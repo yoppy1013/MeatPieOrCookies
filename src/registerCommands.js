@@ -67,7 +67,8 @@ module.exports = async function registerCommands(token, appId) {
   { body: commands }
 );
 */
-await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: commands });
+await rest.put(Routes.applicationCommands(appId), { body: [] });
+//await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: commands });
 //await rest.put(Routes.applicationCommands(appId), { body: commands });
 
 };
