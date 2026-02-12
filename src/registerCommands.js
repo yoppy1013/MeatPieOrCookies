@@ -4,11 +4,12 @@ const {
   SlashCommandBuilder,
   ChannelType,
 } = require("discord.js");
+require("dotenv").config();
 
 module.exports = async function registerCommands(token, appId) {
 
     console.log("registerCommands appId=", appId);
-    
+
   const commands = [
     new SlashCommandBuilder()
       .setName("yokoso")
@@ -67,5 +68,9 @@ module.exports = async function registerCommands(token, appId) {
   ].map(c => c.toJSON());
 
   const rest = new REST({ version: "10" }).setToken(token);
-  await rest.put(Routes.applicationCommands(appId), { body: commands });
+  await rest.put(
+  Routes.applicationGuildCommands(appId, process.env.DISCORD_GUILD_ID),
+  { body: commands }
+);
+ // await rest.put(Routes.applicationCommands(appId), { body: commands });
 };
