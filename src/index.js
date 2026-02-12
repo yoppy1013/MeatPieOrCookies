@@ -1,0 +1,50 @@
+const { Client, GatewayIntentBits, Partials } = require("discord.js");
+const cfg = require("./config");
+const state = require("./state");
+
+const onGuildMemberAdd = require("./handlers/onGuildMemberAdd");
+const onVoiceStateUpdate = require("./handlers/onVoiceStateUpdate");
+const onVoiceChannelStatusUpdate = require("./handlers/onVoiceChannelStatusUpdate");
+const onMessageCreate = require("./handlers/onMessageCreate");
+
+console.log("TOKENの読込に成功しました");
+
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildVoiceStates,
+  ],
+  partials: [Partials.Channel],
+});
+
+client.once("ready", () => {
+  console.log(`サーバに接続しました: ${client.user.tag}`);
+});
+
+client.on("guildMemberAdd", onGuildMemberAdd(cfg));
+
+client.on("voiceStateUpdate", onVoiceStateUpdate({
+  VOICE_LOG_CHANNEL_ID: cfg.VOICE_LOG_CHANNEL_ID,
+  vcJoinTimes: state.vcJoinTimes,
+}));
+
+const handleStatus = onVoiceChannelStatusUpdate({
+  VOICE_LOG_CHANNEL_ID: cfg.VOICE_LOG_CHANNEL_ID,
+  voiceStatusCache: state.voiceStatusCache,
+});
+client.on("raw", (packet) => handleStatus(client, packet));
+
+client.on("messageCreate", onMessageCreate({
+  client,
+  MENTION_IMAGE: cfg.MENTION_IMAGE,
+  YONDENAI_IMAGE: cfg.YONDENAI_IMAGE,
+  MESHI_CHANNEL_ID: cfg.MESHI_CHANNEL_ID,
+  SAKE_CHANNEL_ID: cfg.SAKE_CHANNEL_ID,
+  lastMemberFetchAt: state.lastMemberFetchAt,
+}));
+
+client.login(cfg.TOKEN);
