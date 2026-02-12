@@ -101,13 +101,13 @@ module.exports = function onInteractionCreate({  }) {
     // 抽出元
     if (interaction.commandName === "meshitero") {
     setGuildSetting(interaction.guildId, "sourceMeshiChannelId", interaction.channelId);
-      await interaction.reply({ content: `めしてろ抽出元をこのチャンネルに設定しました`, flags: MessageFlags.Ephemeral });
+      await interaction.reply({ content: `めしてろ抽出元を${interaction.channel}に設定しました`, flags: MessageFlags.Ephemeral });
       return;
     }
 
     if (interaction.commandName === "sake") {
       setGuildSetting(interaction.guildId, "sourceSakeChannelId", interaction.channelId);
-      await interaction.reply({ content: `酒抽出元をこのチャンネルに設定しました`, flags: MessageFlags.Ephemeral });
+      await interaction.reply({ content: `酒抽出元を${interaction.channel}に設定しました`, flags: MessageFlags.Ephemeral });
       return;
     }
 
