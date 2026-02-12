@@ -7,7 +7,7 @@ const {
   removeFromGuildList,
 } = require("../store/guildSettings");
 
-module.exports = function onInteractionCreate({ MESHI_CHANNEL_ID, SAKE_CHANNEL_ID }) {
+module.exports = function onInteractionCreate({  }) {
   return async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
@@ -29,21 +29,24 @@ module.exports = function onInteractionCreate({ MESHI_CHANNEL_ID, SAKE_CHANNEL_I
     ]);
 
     if (needsAllow.has(interaction.commandName) && !isAllowed(interaction)) {
-      await interaction.reply({ content: "このコマンドを実行する権限がありません。", ephemeral: true });
+      await interaction.reply({ content: "このコマンドを実行する権限がありません", ephemeral: true });
       return;
     }
 
     // /yokoso
     if (interaction.commandName === "yokoso") {
-      await interaction.reply({ content: "送信しました。", ephemeral: true });
-      await ch.send("ようこそいらいしゃい！みんな来ると思ってミートパイを焼いてたの！それともクッキーがいいかしら？");
+      setGuildSetting(interaction.guildId, "welcomeChannelId", interaction.channelId);
+      await interaction.reply({
+        content: `入室時のメッセージの送信を${interaction.channel}に設定しました`,
+        flags: MessageFlags.Ephemeral,
+      });
       return;
     }
 
     // VCログ先
     if (interaction.commandName === "voice") {
       setGuildSetting(interaction.guildId, "voiceLogChannelId", ch.id);
-      await interaction.reply({ content: `このチャンネルをVCログ送信先に設定しました: ${ch}`, ephemeral: true });
+      await interaction.reply({ content: ` ${ch}をVCログ送信先に設定しました`, ephemeral: true });
       return;
     }
 
