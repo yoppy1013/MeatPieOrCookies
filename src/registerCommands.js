@@ -6,6 +6,9 @@ const {
 } = require("discord.js");
 
 module.exports = async function registerCommands(token, appId) {
+
+    console.log("registerCommands appId=", appId);
+    
   const commands = [
     new SlashCommandBuilder()
       .setName("yokoso")
