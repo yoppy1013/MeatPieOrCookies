@@ -60,13 +60,12 @@ module.exports = async function registerCommands(token, appId) {
   ].map(c => c.toJSON());
 
   const rest = new REST({ version: "10" }).setToken(token);
+  /*
   await rest.put(
   Routes.applicationGuildCommands(appId, process.env.DISCORD_GUILD_ID),
   { body: commands }
 );
- // await rest.put(Routes.applicationCommands(appId), { body: commands });
- // ① グローバルコマンドを全削除（1回だけやる）
-await rest.put(Routes.applicationCommands(appId), { body: [] });
-console.log("Global commands cleared");
+*/
+await rest.put(Routes.applicationCommands(appId), { body: commands });
 
 };
