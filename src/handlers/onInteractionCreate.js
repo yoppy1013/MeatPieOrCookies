@@ -47,43 +47,54 @@ module.exports = function onInteractionCreate({ MESHI_CHANNEL_ID, SAKE_CHANNEL_I
       return;
     }
 
-    // 許可 / 剥奪
+    // 許可追加・剥奪
     if (interaction.commandName === "roll" || interaction.commandName === "deroll") {
-      const target = interaction.options.getMentionable("target", true);
+    await interaction.deferReply({ ephemeral: true });
 
-      // Role か User か確認
-      const isRole = !!target?.id && target?.constructor?.name === "Role";
-      const isUser = !!target?.id && (target?.constructor?.name === "User");
+    const target = interaction.options.getMentionable("target", true);
+    const guildId = interaction.guildId;
 
-      if (!isRole && !isUser) {
-        await interaction.reply({ content: "ロールまたはユーザーを指定してください。", ephemeral: true });
-        return;
-      }
+   const isAdd = interaction.commandName === "roll";
+    const add = (key, val) => addToGuildList(guildId, key, val);
+    const del = (key, val) => removeFromGuildList(guildId, key, val);
 
-      const guildId = interaction.guildId;
-
-      if (interaction.commandName === "roll") {
-        if (isRole) {
-          const arr = addToGuildList(guildId, "allowRoleIds", target.id);
-          await interaction.reply({ content: `許可ロールに追加しました: <@&${target.id}>\n現在の許可ロール数: ${arr.length}`, ephemeral: true });
-        } else {
-          const arr = addToGuildList(guildId, "allowUserIds", target.id);
-          await interaction.reply({ content: `許可ユーザーに追加しました: <@${target.id}>\n現在の許可ユーザー数: ${arr.length}`, ephemeral: true });
-        }
-        return;
-      }
-
-      // deroll
-      if (isRole) {
-        const arr = removeFromGuildList(guildId, "allowRoleIds", target.id);
-        await interaction.reply({ content: `許可ロールから削除しました: <@&${target.id}>\n現在の許可ロール数: ${arr.length}`, ephemeral: true });
-      } else {
-        const arr = removeFromGuildList(guildId, "allowUserIds", target.id);
-        await interaction.reply({ content: `許可ユーザーから削除しました: <@${target.id}>\n現在の許可ユーザー数: ${arr.length}`, ephemeral: true });
-      }
+   // Role
+    if (target instanceof Role) {
+      const arr = isAdd ? add("allowRoleIds", target.id) : del("allowRoleIds", target.id);
+      await interaction.editReply(
+        isAdd
+          ? `許可ロールに追加しました: <@&${target.id}>（現在 ${arr.length}件）`
+          : `許可ロールから削除しました: <@&${target.id}>（現在 ${arr.length}件）`
+      );
       return;
     }
 
+    // User
+    if (target instanceof User) {
+      const arr = isAdd ? add("allowUserIds", target.id) : del("allowUserIds", target.id);
+      await interaction.editReply(
+        isAdd
+          ? `許可ユーザーに追加しました: <@${target.id}>（現在 ${arr.length}件）`
+          : `許可ユーザーから削除しました: <@${target.id}>（現在 ${arr.length}件）`
+      );
+      return;
+    }
+
+    // GuildMember
+    if (target instanceof GuildMember || target?.user) {
+      const uid = target.user?.id ?? target.id;
+      const arr = isAdd ? add("allowUserIds", uid) : del("allowUserIds", uid);
+      await interaction.editReply(
+        isAdd
+          ? `許可ユーザーに追加しました: <@${uid}>（現在 ${arr.length}件）`
+          : `許可ユーザーから削除しました: <@${uid}>（現在 ${arr.length}件）`
+      );
+      return;
+    }
+
+    await interaction.editReply("ロールまたはユーザーを指定してください。");
+    return;
+  }
     // 抽出元
     if (interaction.commandName === "meshitero") {
       const src = interaction.options.getChannel("channel", true);
