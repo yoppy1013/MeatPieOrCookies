@@ -3,6 +3,7 @@ const path = require("path");
 
 module.exports = {
   TOKEN: process.env.DISCORD_BOT_TOKEN,
+  APP_ID: process.env.DISCORD_APP_ID,
 
   // チャンネルID
   WELCOME_CHANNEL_ID: "1439923741588193415",

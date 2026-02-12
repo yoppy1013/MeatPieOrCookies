@@ -1,7 +1,6 @@
-module.exports = function onVoiceChannelStatusUpdate({
-  VOICE_LOG_CHANNEL_ID,
-  voiceStatusCache,
-}) {
+const { getGuildSettings } = require("../store/guildSettings");
+
+module.exports = function onVoiceChannelStatusUpdate({ voiceStatusCache }) {
   return async (client, packet) => {
     if (packet.t !== "VOICE_CHANNEL_STATUS_UPDATE") return;
 
@@ -10,13 +9,16 @@ module.exports = function onVoiceChannelStatusUpdate({
       const guildId = data.guild_id;
       const channelId = data.id;
       const newStatus = data.status ?? "（未設定）";
-
       if (newStatus === "（未設定）") return;
 
       const guild = client.guilds.cache.get(guildId);
       if (!guild) return;
 
-      const logChannel = guild.channels.cache.get(VOICE_LOG_CHANNEL_ID);
+      const settings = getGuildSettings(guildId);
+      const logChannelId = settings.voiceLogChannelId;
+      if (!logChannelId) return;
+
+      const logChannel = guild.channels.cache.get(logChannelId);
       if (!logChannel || !logChannel.isTextBased()) return;
 
       const vcChannel = guild.channels.cache.get(channelId);
@@ -32,7 +34,7 @@ module.exports = function onVoiceChannelStatusUpdate({
         "```diff",
         `- ${oldStatus}`,
         `+ ${newStatus}`,
-        "```"
+        "```",
       ].join("\n");
 
       await logChannel.send(message);
