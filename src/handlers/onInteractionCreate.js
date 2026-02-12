@@ -24,8 +24,6 @@ module.exports = function onInteractionCreate({ MESHI_CHANNEL_ID, SAKE_CHANNEL_I
       "voice",
       "roll",
       "deroll",
-      "source_meshi",
-      "source_sake",
       "meshitero",
       "sake",
     ]);
@@ -87,53 +85,19 @@ module.exports = function onInteractionCreate({ MESHI_CHANNEL_ID, SAKE_CHANNEL_I
     }
 
     // 抽出元
-    if (interaction.commandName === "source_meshi") {
+    if (interaction.commandName === "meshitero") {
       const src = interaction.options.getChannel("channel", true);
       setGuildSetting(interaction.guildId, "sourceMeshiChannelId", src.id);
       await interaction.reply({ content: `めしてろ抽出元を設定しました: ${src}`, ephemeral: true });
       return;
     }
 
-    if (interaction.commandName === "source_sake") {
+    if (interaction.commandName === "sake") {
       const src = interaction.options.getChannel("channel", true);
       setGuildSetting(interaction.guildId, "sourceSakeChannelId", src.id);
       await interaction.reply({ content: `酒抽出元を設定しました: ${src}`, ephemeral: true });
       return;
     }
 
-    // meshitero / sake
-    if (interaction.commandName === "meshitero") {
-      await interaction.deferReply({ ephemeral: true });
-
-      const s = getGuildSettings(interaction.guildId);
-      const srcId = s.sourceMeshiChannelId || MESHI_CHANNEL_ID;
-
-      const picked = await getRandomImageUrlFromChannel(interaction.guild, srcId);
-      if (!picked) {
-        await interaction.editReply("めしてろ画像が見つかりませんでした。");
-        return;
-      }
-
-      await ch.send({ content: "めしてろします。", files: [picked.url] });
-      await interaction.editReply("送信しました。");
-      return;
-    }
-
-    if (interaction.commandName === "sake") {
-      await interaction.deferReply({ ephemeral: true });
-
-      const s = getGuildSettings(interaction.guildId);
-      const srcId = s.sourceSakeChannelId || SAKE_CHANNEL_ID;
-
-      const picked = await getRandomImageUrlFromChannel(interaction.guild, srcId);
-      if (!picked) {
-        await interaction.editReply("ガハハ！失敗…");
-        return;
-      }
-
-      await ch.send({ content: "ガハハ！", files: [picked.url] });
-      await interaction.editReply("送信しました。");
-      return;
-    }
-  };
+    };
 };

@@ -4,11 +4,12 @@ const {
   SlashCommandBuilder,
   ChannelType,
 } = require("discord.js");
+require("dotenv").config();
 
 module.exports = async function registerCommands(token, appId) {
 
     console.log("registerCommands appId=", appId);
-    
+
   const commands = [
     new SlashCommandBuilder()
       .setName("yokoso")
@@ -17,14 +18,6 @@ module.exports = async function registerCommands(token, appId) {
     new SlashCommandBuilder()
       .setName("voice")
       .setDescription("このチャンネルをVCログ送信先に設定する"),
-
-    new SlashCommandBuilder()
-      .setName("meshitero")
-      .setDescription("このチャンネルにめしてろ画像を投稿する"),
-
-    new SlashCommandBuilder()
-      .setName("sake")
-      .setDescription("このチャンネルに酒画像を投稿する"),
 
     // 許可追加
     new SlashCommandBuilder()
@@ -44,7 +37,7 @@ module.exports = async function registerCommands(token, appId) {
 
     // 抽出元設定
     new SlashCommandBuilder()
-      .setName("source_meshi")
+      .setName("meshitero")
       .setDescription("めしてろの抽出元チャンネルを設定")
       .addChannelOption(opt =>
         opt
@@ -55,7 +48,7 @@ module.exports = async function registerCommands(token, appId) {
       ),
 
     new SlashCommandBuilder()
-      .setName("source_sake")
+      .setName("sake")
       .setDescription("酒の抽出元チャンネルを設定")
       .addChannelOption(opt =>
         opt
@@ -67,5 +60,9 @@ module.exports = async function registerCommands(token, appId) {
   ].map(c => c.toJSON());
 
   const rest = new REST({ version: "10" }).setToken(token);
-  await rest.put(Routes.applicationCommands(appId), { body: commands });
+  await rest.put(
+  Routes.applicationGuildCommands(appId, process.env.DISCORD_GUILD_ID),
+  { body: commands }
+);
+ // await rest.put(Routes.applicationCommands(appId), { body: commands });
 };
