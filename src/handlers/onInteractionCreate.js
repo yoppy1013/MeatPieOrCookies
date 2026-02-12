@@ -5,6 +5,8 @@ const {
   addToGuildList,
   removeFromGuildList,
 } = require("../store/guildSettings");
+const { Role, User, GuildMember, MessageFlags } = require("discord.js");
+
 
 module.exports = function onInteractionCreate({  }) {
   return async (interaction) => {
