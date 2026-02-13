@@ -46,12 +46,14 @@ module.exports = async function registerCommands(token, appId) {
       .setName("sake")
       .setDescription("このチャンネルからガハハ！をする")
     ,
+    
     new SlashCommandBuilder()
       .setName("welroll")
       .setDescription("入室時に付与するロールを追加する")
       .addRoleOption(opt =>
       opt.setName("role").setDescription("付与するロール").setRequired(true)
     ),
+
     new SlashCommandBuilder()
       .setName("dewelroll")
       .setDescription("入室時に付与するロールを解除する")
@@ -59,6 +61,9 @@ module.exports = async function registerCommands(token, appId) {
       opt.setName("role").setDescription("解除するロール").setRequired(true)
     ),
 
+    new SlashCommandBuilder()
+      .setName("status")
+      .setDescription("現在のサーバ設定を表示"),
   ].map(c => c.toJSON());
 
   const rest = new REST({ version: "10" }).setToken(token);
