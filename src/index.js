@@ -30,7 +30,7 @@ client.once("ready", async () => {
 });
 client.on("interactionCreate", onInteractionCreate(cfg));
 
-client.on("guildMemberAdd", onGuildMemberAdd(cfg));
+client.on("guildMemberAdd", onGuildMemberAdd());
 
 client.on("voiceStateUpdate", onVoiceStateUpdate({
   VOICE_LOG_CHANNEL_ID: cfg.VOICE_LOG_CHANNEL_ID,

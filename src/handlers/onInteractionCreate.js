@@ -111,5 +111,38 @@ module.exports = function onInteractionCreate({  }) {
       return;
     }
 
-    };
+    //入室時付与ロールを追加
+    if (interaction.commandName === "welroll") {
+       if (!isAllowed(interaction)) {
+        await interaction.reply({ content: "このコマンドを実行する権限がありません。", flags: MessageFlags.Ephemeral });
+        return;
+      }
+
+    const role = interaction.options.getRole("role", true);
+    const arr = addToGuildList(interaction.guildId, "welcomeRoleIds", role.id);
+
+    await interaction.reply({
+      content: `入室時付与ロールに追加しました: <@&${role.id}>（現在 ${arr.length}件）`,
+      flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
+    //入室時付与ロールを解除
+    if (interaction.commandName === "dewelroll") {
+      if (!isAllowed(interaction)) {
+        await interaction.reply({ content: "このコマンドを実行する権限がありません。", flags: MessageFlags.Ephemeral });
+        return;
+      }
+
+    const role = interaction.options.getRole("role", true);
+    const arr = removeFromGuildList(interaction.guildId, "welcomeRoleIds", role.id);
+
+    await interaction.reply({
+      content: `入室時付与ロールから解除しました: <@&${role.id}>（現在 ${arr.length}件）`,
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+    }
+  };
 };
