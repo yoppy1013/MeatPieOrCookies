@@ -13,7 +13,7 @@ module.exports = function onInteractionCreate({  }) {
     if (!interaction.isChatInputCommand()) return;
 
     if (!interaction.guild) {
-      await interaction.reply({ content: "サーバ内で使ってください。", flags: MessageFlags.Ephemeral });
+      await interaction.reply({ content: "コマンドはサーバ内でのみ使用できます。", flags: MessageFlags.Ephemeral });
       return;
     }
 
@@ -21,7 +21,7 @@ module.exports = function onInteractionCreate({  }) {
 
 // 権限コマンド
     const needsAllow = new Set([
-        "yosokoso",
+      "yosokoso",
       "voice",
       "roll",
       "deroll",
@@ -54,63 +54,54 @@ module.exports = function onInteractionCreate({  }) {
       return;
     }
 
-    // 許可追加・剥奪
-    if (interaction.commandName === "roll" || interaction.commandName === "deroll") {
-    await interaction.deferReply({ ephemeral: true });
+// 許可追加・剥奪
+if (interaction.commandName === "roll" || interaction.commandName === "deroll") {
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    const target = interaction.options.getMentionable("target", true);
-    const guildId = interaction.guildId;
+  const target = interaction.options.getMentionable("target", true);
+  const guildId = interaction.guildId;
 
-   const isAdd = interaction.commandName === "roll";
-    const add = (key, val) => addToGuildList(guildId, key, val);
-    const del = (key, val) => removeFromGuildList(guildId, key, val);
+  const isAdd = interaction.commandName === "roll";
+  const add = (key, val) => addToGuildList(guildId, key, val);
+  const del = (key, val) => removeFromGuildList(guildId, key, val);
 
-   // Role
-    if (target instanceof Role) {
-      const arr = isAdd ? add("allowRoleIds", target.id) : del("allowRoleIds", target.id);
-      await interaction.editReply(
-        isAdd
-          ? `許可ロールに追加しました: <@&${target.id}>（現在 ${arr.length}件）`
-          : `許可ロールから削除しました: <@&${target.id}>（現在 ${arr.length}件）`
-      );
-      return;
-    }
+  const isRole = !!target?.name && !target?.user;
+  const isMember = !!target?.user;
 
-    // User
-    if (target instanceof User) {
-      const arr = isAdd ? add("allowUserIds", target.id) : del("allowUserIds", target.id);
-      await interaction.editReply(
-        isAdd
-          ? `許可ユーザーに追加しました: <@${target.id}>（現在 ${arr.length}件）`
-          : `許可ユーザーから削除しました: <@${target.id}>（現在 ${arr.length}件）`
-      );
-      return;
-    }
-
-    // GuildMember
-    if (target instanceof GuildMember || target?.user) {
-      const uid = target.user?.id ?? target.id;
-      const arr = isAdd ? add("allowUserIds", uid) : del("allowUserIds", uid);
-      await interaction.editReply(
-        isAdd
-          ? `許可ユーザーに追加しました: <@${uid}>（現在 ${arr.length}件）`
-          : `許可ユーザーから削除しました: <@${uid}>（現在 ${arr.length}件）`
-      );
-      return;
-    }
-
-    await interaction.editReply("ロールまたはユーザーを指定してください。");
+  if (isRole) {
+    const arr = isAdd ? add("allowRoleIds", target.id) : del("allowRoleIds", target.id);
+    await interaction.editReply(
+      isAdd
+        ? `許可ロールに追加しました: <@&${target.id}>（現在 ${arr.length}件）`
+        : `許可ロールから削除しました: <@&${target.id}>（現在 ${arr.length}件）`
+    );
     return;
   }
+
+  if (isMember) {
+    const uid = target.user.id;
+    const arr = isAdd ? add("allowUserIds", uid) : del("allowUserIds", uid);
+    await interaction.editReply(
+      isAdd
+        ? `許可ユーザーに追加しました: <@${uid}>（現在 ${arr.length}件）`
+        : `許可ユーザーから削除しました: <@${uid}>（現在 ${arr.length}件）`
+    );
+    return;
+  }
+
+  await interaction.editReply("ロールまたはユーザーを指定してください。");
+  return;
+}
+
     // 抽出元
     if (interaction.commandName === "meshitero") {
-    setGuildSetting(interaction.guildId, "sourceMeshiChannelId", interaction.channelId);
+      setGuildSetting(interaction.guildId, "meshiSourceChannelId", interaction.channelId);
       await interaction.reply({ content: `めしてろ抽出元を${interaction.channel}に設定しました`, flags: MessageFlags.Ephemeral });
       return;
     }
 
     if (interaction.commandName === "sake") {
-      setGuildSetting(interaction.guildId, "sourceSakeChannelId", interaction.channelId);
+      setGuildSetting(interaction.guildId, "sakeSourceChannelId", interaction.channelId);
       await interaction.reply({ content: `酒抽出元を${interaction.channel}に設定しました`, flags: MessageFlags.Ephemeral });
       return;
     }
