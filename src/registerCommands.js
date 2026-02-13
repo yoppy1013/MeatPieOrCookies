@@ -45,6 +45,19 @@ module.exports = async function registerCommands(token, appId) {
     new SlashCommandBuilder()
       .setName("sake")
       .setDescription("このチャンネルからガハハ！をする")
+    ,
+    new SlashCommandBuilder()
+      .setName("welroll")
+      .setDescription("入室時に付与するロールを追加する")
+      .addRoleOption(opt =>
+      opt.setName("role").setDescription("付与するロール").setRequired(true)
+    ),
+    new SlashCommandBuilder()
+      .setName("dewelroll")
+      .setDescription("入室時に付与するロールを解除する")
+    .addRoleOption(opt =>
+      opt.setName("role").setDescription("解除するロール").setRequired(true)
+    ),
 
   ].map(c => c.toJSON());
 
