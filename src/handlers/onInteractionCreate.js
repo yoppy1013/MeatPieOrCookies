@@ -1,5 +1,6 @@
 const isAllowed = require("../utils/isAllowed");
 const {
+  getGuildSettings,
   setGuildSetting,
   addToGuildList,
   removeFromGuildList,
