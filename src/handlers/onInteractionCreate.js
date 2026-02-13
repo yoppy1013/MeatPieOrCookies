@@ -172,7 +172,8 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
     `めしてろ画像元: ${fmtChannel(s.meshiSourceChannelId)}`,
     `酒画像元: ${fmtChannel(s.sakeSourceChannelId)}`,
     "",
-    `"コマンド実行許可対象: ${allowText}`,
+    `コマンド実行許可対象:`,
+     allowText,
     "",
     `入室時付与ロール: ${
       welcomeRoles.length
