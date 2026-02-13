@@ -1,23 +1,31 @@
-
 const { getGuildSettings } = require("../store/guildSettings");
-module.exports = function onGuildMemberAdd(ROLE_ID) {
+
+module.exports = function onGuildMemberAdd() {
   return async (member) => {
     const settings = getGuildSettings(member.guild.id);
+
+    //welcomeメッセージ送信先
     const chId = settings.welcomeChannelId;
-    if (!chId) return; // 未設定なら何もしない
+    if (chId) {
+      const channel = member.guild.channels.cache.get(chId);
+      if (channel && channel.isTextBased()) {
+        await channel.send(
+          "ようこそいらいしゃい！みんな来ると思ってミートパイを焼いてたの！それともクッキーがいいかしら？"
+        );
+      }
+    }
 
-    const channel = member.guild.channels.cache.get(chId);
-    if (!channel || !channel.isTextBased()) return;
+    //入室時ロール付与
+    const roleIds = Array.isArray(settings.welcomeRoleIds) ? settings.welcomeRoleIds : [];
+    if (roleIds.length === 0) return;
 
-    await channel.send(
-      "ようこそいらいしゃい！みんな来ると思ってミートパイを焼いてたの！それともクッキーがいいかしら？"
-    );
-
-    try {
-      await member.roles.add(ROLE_ID);
-      console.log(`ロールID「${ROLE_ID}」を ${member.user.tag} に付与しました`);
-    } catch (err) {
-      console.error(`ロール付与に失敗しました`, err);
+    for (const roleId of roleIds) {
+      try {
+        await member.roles.add(roleId);
+        console.log(`welcome role: ${roleId} を ${member.user.tag} に付与しました`);
+      } catch (err) {
+        console.error(`welcome role付与に失敗しました roleId=${roleId} user=${member.user.tag}`, err);
+      }
     }
   };
 };
