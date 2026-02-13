@@ -26,6 +26,8 @@ module.exports = function onInteractionCreate({  }) {
       "deroll",
       "meshitero",
       "sake",
+      "welroll",
+      "dewelroll",
     ]);
 
     if (needsAllow.has(interaction.commandName) && !isAllowed(interaction)) {
