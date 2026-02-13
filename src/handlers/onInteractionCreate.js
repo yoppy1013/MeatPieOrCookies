@@ -151,6 +151,14 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
       return;
     }
     const s = getGuildSettings(interaction.guildId);
+    const allowRoles = s.allowRoleIds ?? [];
+    const allowUsers = s.allowUserIds ?? [];
+
+    const allowText = [
+      allowRoles.length ? `ロール: ${allowRoles.map(id => `<@&${id}>`).join(" ")}` : null,
+      allowUsers.length ? `ユーザー: ${allowUsers.map(id => `<@${id}>`).join(" ")}` : null,
+    ].filter(Boolean).join("\n") || "なし";
+
     const fmtChannel = id => id ? `<#${id}>` : "未設定";
     const fmtRole = id => `<@&${id}>`;
     const fmtUser = id => `<@${id}>`;
@@ -164,11 +172,7 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
     `めしてろ画像元: ${fmtChannel(s.meshiSourceChannelId)}`,
     `酒画像元: ${fmtChannel(s.sakeSourceChannelId)}`,
     "",
-    `コマンド実行許可対象: ${
-      allow.length
-        ? allow.map(id => id.length > 17 ? fmtRole(id) : fmtUser(id)).join(" ")
-        : "なし"
-    }`,
+    `"コマンド実行許可対象: ${allowText}`,
     "",
     `入室時付与ロール: ${
       welcomeRoles.length
