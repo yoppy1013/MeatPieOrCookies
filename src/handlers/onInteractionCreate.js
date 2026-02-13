@@ -146,5 +146,51 @@ module.exports = function onInteractionCreate({  }) {
     });
     return;
     }
+    
+    // /status
+    if (interaction.commandName === "status") {
+
+      if (!isAllowed(interaction)) {
+        await interaction.reply({
+        content: "このコマンドを実行する権限がありません。",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+    const s = getGuildSettings(interaction.guildId);
+    const fmtChannel = id => id ? `<#${id}>` : "未設定";
+    const fmtRole = id => `<@&${id}>`;
+    const fmtUser = id => `<@${id}>`;
+    const allow = s.allowIds ?? [];
+    const welcomeRoles = s.welcomeRoleIds ?? [];
+    const text = [
+    "**現在の設定**",
+    "",
+    `入室メッセージ: ${fmtChannel(s.welcomeChannelId)}`,
+    `VCログ: ${fmtChannel(s.voiceLogChannelId)}`,
+    `めしてろ画像元: ${fmtChannel(s.meshiSourceChannelId)}`,
+    `酒画像元: ${fmtChannel(s.sakeSourceChannelId)}`,
+    "",
+    `コマンド実行許可対象: ${
+      allow.length
+        ? allow.map(id => id.length > 17 ? fmtRole(id) : fmtUser(id)).join(" ")
+        : "なし"
+    }`,
+    "",
+    `入室時付与ロール: ${
+      welcomeRoles.length
+        ? welcomeRoles.map(fmtRole).join(" ")
+        : "なし"
+    }`,
+  ].join("\n");
+
+  await interaction.reply({
+    content: text,
+    flags: MessageFlags.Ephemeral,
+  });
+
+    return;
+    }
+
   };
 };
