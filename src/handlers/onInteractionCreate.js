@@ -28,6 +28,7 @@ module.exports = function onInteractionCreate({  }) {
       "sake",
       "welroll",
       "dewelroll",
+      "status",
     ]);
 
     if (needsAllow.has(interaction.commandName) && !isAllowed(interaction)) {
@@ -146,7 +147,7 @@ module.exports = function onInteractionCreate({  }) {
     });
     return;
     }
-    
+
     // /status
     if (interaction.commandName === "status") {
 
