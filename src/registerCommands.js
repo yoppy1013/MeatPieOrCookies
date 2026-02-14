@@ -114,6 +114,7 @@ module.exports = async function registerCommands(token, appId, guildId) {
   console.log("commands delete ok");
   
   console.log("commands register start", commands.length);
+  console.log("REGISTER PATCH ACTIVE: before try");
 
 try {
   const res = await rest.put(
