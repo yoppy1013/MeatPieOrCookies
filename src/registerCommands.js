@@ -6,6 +6,9 @@ const {
 } = require("discord.js");
 require("dotenv").config();
 
+const dns = require("dns");
+dns.setDefaultResultOrder("ipv4first");
+
 module.exports = async function registerCommands(token, appId, guildId) {
 
     console.log("registerCommands appId=", appId);
