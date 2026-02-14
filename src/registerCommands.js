@@ -97,7 +97,11 @@ module.exports = async function registerCommands(token, appId, guildId) {
   )
   .addSubcommand((sub) => sub.setName("cancel").setDescription("タイマーを解除する"))
   .addSubcommand((sub) => sub.setName("status").setDescription("タイマーの残り時間を表示する"))
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> 45c2b4634b4c82a354f9a18a9c03a9036c70965e
   ].map(c => c.toJSON());
 
 
