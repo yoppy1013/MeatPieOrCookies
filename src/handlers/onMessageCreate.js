@@ -32,11 +32,6 @@ module.exports = function onMessageCreate({
       flag = 1;
     }
 
-    if (message.content.includes("ちんぽ")) {
-      await message.channel.send("今「ちんぽ」って言いました？");
-      flag = 1;
-    }
-
     // めしてろ
  if (message.content.includes("めしてろ")) {
   if (!message.guild) {
