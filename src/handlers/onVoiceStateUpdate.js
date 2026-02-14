@@ -1,15 +1,19 @@
 const { getGuildSettings } = require("../store/guildSettings");
 const { EmbedBuilder } = require("discord.js");
 
-const formatTime = () => {
+const formatDateTime = () => {
   const d = new Date();
   return d.toLocaleString("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
     hour12: false,
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-  });
+  }).replace(/\//g, "/");
 };
+
 
 module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
   return async (oldState, newState) => {
@@ -51,7 +55,7 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
         .setDescription(description)
         .setThumbnail(thumbnail ? thumbnail.url : null)
         .setColor(color)
-
+        .setFooter({ text: formatDateTime() });
       if (fields.length) emb.addFields(fields);
       return emb;
     };
@@ -77,7 +81,6 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
             fields: [
               { name: "ユーザー", value: `<@${userId}>`, inline: true },
               ...(durationField ? [durationField] : []),
-              { name: "時刻", value: formatTime(), inline: true },
             ],
           }),
         ],
@@ -102,7 +105,6 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
             color: 0x2ecc71, // 緑
             fields: [
               { name: "ユーザー", value: `<@${userId}>`, inline: true },
-              { name: "時刻", value: formatTime(), inline: true },
             ],
           }),
         ],
@@ -130,7 +132,6 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
             fields: [
               { name: "ユーザー", value: `<@${userId}>`, inline: true },
               { name: "通話時間", value: duration, inline: true },
-              { name: "時刻", value: formatTime(), inline: true },
             ],
           }),
         ],
