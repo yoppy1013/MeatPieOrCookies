@@ -35,10 +35,11 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
       return parts.join("");
     };
 
-    const makeEmbed = ({ title, description, color, fields = [] }) => {
+    const makeEmbed = ({ title, description, color,thumbnail, fields = [] }) => {
       const emb = new EmbedBuilder()
         .setTitle(title)
         .setDescription(description)
+        .setThumbnail(thumbnail ? thumbnail.url : null)
         .setColor(color)
         .setTimestamp(new Date())
         .setAuthor({
@@ -66,6 +67,7 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
           makeEmbed({
             title: "VCを移動しました",
             description: `${oldCh} から ${newCh} へ移動しました`,
+            thumbnail: { url: member.displayAvatarURL({ size: 256 }) },
             color: 0x3498db, // 青
             fields: [
               { name: "ユーザー", value: `<@${userId}>`, inline: true },
@@ -90,6 +92,7 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
           makeEmbed({
             title: "VCに参加しました",
             description: `${ch} に参加しました`,
+            thumbnail: { url: member.displayAvatarURL({ size: 256 }) },
             color: 0x2ecc71, // 緑
             fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
           }),
@@ -113,6 +116,7 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
           makeEmbed({
             title: "VCから退出しました",
             description: `${ch} から退出しました`,
+            thumbnail: { url: member.displayAvatarURL({ size: 256 }) },
             color: 0xe74c3c, // 赤
             fields: [
               { name: "ユーザー", value: `<@${userId}>`, inline: true },
