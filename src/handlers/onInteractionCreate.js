@@ -21,7 +21,7 @@ module.exports = function onInteractionCreate({  }) {
 
 // 権限コマンド
     const needsAllow = new Set([
-      "yokoso",
+      "welcome",
       "voice",
       "stamsg",
       "roll",
@@ -40,7 +40,7 @@ module.exports = function onInteractionCreate({  }) {
     }
 
     // /yokoso
-    if (interaction.commandName === "yokoso") {
+    if (interaction.commandName === "welcome") {
       setGuildSetting(interaction.guildId, "welcomeChannelId", interaction.channelId);
       await interaction.reply({
         content: `入室時のメッセージの送信を${interaction.channel}に設定しました`,

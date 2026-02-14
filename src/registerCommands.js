@@ -13,7 +13,7 @@ module.exports = async function registerCommands(token, appId) {
 
   const commands = [
     new SlashCommandBuilder()
-      .setName("yokoso")
+      .setName("welcome")
       .setDescription("このチャンネルにミートパイかクッキーを送る"),
 
     new SlashCommandBuilder()
