@@ -15,10 +15,10 @@ const formatDateTime = () => {
 };
 
 // 通知例外チャンネル（プライベートVC）
-const PRIVATE_VC_IDS = new Set([
-  "1440349567634899014",
-  "1472185306760478772",
-]);
+const isIgnoredVc = (settings, ch) =>
+  !!ch && Array.isArray(settings.ignoredVoiceChannelIds)
+    && settings.ignoredVoiceChannelIds.includes(ch.id);
+
 
 const isPrivateVc = (ch) => !!ch && PRIVATE_VC_IDS.has(ch.id);
 
@@ -95,9 +95,9 @@ module.exports = function onVoiceStateUpdate({
     const oldCh = oldState.channel;
     const newCh = newState.channel;
 
-    const oldIsPrivate = isPrivateVc(oldCh);
-    const newIsPrivate = isPrivateVc(newCh);
-
+    const oldIsPrivate = isIgnoredVc(settings, oldCh);
+    const newIsPrivate = isIgnoredVc(settings, newCh);
+    
     // private<->privateは無視
     if (oldIsPrivate && newIsPrivate) return;
 

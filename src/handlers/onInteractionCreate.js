@@ -30,6 +30,7 @@ module.exports = function onInteractionCreate({  }) {
       "welroll",
       "dewelroll",
       "status",
+      "ignore",
     ]);
 
     if (needsAllow.has(interaction.commandName) && !isAllowed(interaction)) {
@@ -140,7 +141,8 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
     return;
     }
 
-    // /status
+    
+    // status
     if (interaction.commandName === "status") {
 
       if (!isAllowed(interaction)) {
@@ -151,6 +153,11 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
       return;
     }
     const s = getGuildSettings(interaction.guildId);
+    const ignoredVCs = s.ignoredVoiceChannelIds ?? [];
+    const ignoredText =
+      ignoredVCs.length
+      ? ignoredVCs.map(id => `<#${id}>`).join(" ")
+      : "なし";
     const allowRoles = s.allowRoleIds ?? [];
     const allowUsers = s.allowUserIds ?? [];
 
@@ -180,6 +187,7 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
         ? welcomeRoles.map(fmtRole).join(" ")
         : "なし"
     }`,
+   `通知除外VC: ${ignoredText}`,
   ].join("\n");
 
   await interaction.reply({
@@ -189,6 +197,32 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
 
     return;
     }
+
+    // ignore 
+  if (interaction.commandName === "ignore") {
+    const guildId = interaction.guildId;
+
+    // 実行者が今入っているVCを取得
+    const vc = interaction.member.voice.channel;
+
+  if (!vc) {
+    await interaction.reply({
+      content: "無視したいVCに参加してください。",
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+  }
+
+  const arr = addToGuildList(guildId, "ignoredVoiceChannelIds", vc.id);
+
+  await interaction.reply({
+    content: `このVCを通知除外にしました: ${vc}（現在 ${arr.length}件）`,
+    flags: MessageFlags.Ephemeral,
+  });
+
+  return;
+}
+
 
   };
 };
