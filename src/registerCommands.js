@@ -81,7 +81,6 @@ module.exports = async function registerCommands(token, appId, guildId) {
       .setName("yokoso")
       .setDescription("入室時メッセージを表示する"),
 
-
     new SlashCommandBuilder()
      .setName("timer")
       .setDescription("指定時刻に自分をVCから切断するタイマー")
@@ -98,7 +97,7 @@ module.exports = async function registerCommands(token, appId, guildId) {
   )
   .addSubcommand((sub) => sub.setName("cancel").setDescription("タイマーを解除する"))
   .addSubcommand((sub) => sub.setName("status").setDescription("タイマーの残り時間を表示する"))
-  ,
+  
   ].map(c => c.toJSON());
 
 
