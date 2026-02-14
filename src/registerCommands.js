@@ -36,6 +36,11 @@ module.exports = async function registerCommands(token, appId) {
         opt.setName("target").setDescription("ロール or ユーザー").setRequired(true)
       ),
 
+    // 無視設定
+    new SlashCommandBuilder()
+      .setName("ignore")
+      .setDescription("現在参加しているVCを通知対象外にする"),
+
     // 抽出元設定
     new SlashCommandBuilder()
       .setName("meshitero")
