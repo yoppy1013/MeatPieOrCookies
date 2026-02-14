@@ -30,7 +30,7 @@ client.once("ready", async () => {
   await registerCommands(cfg.TOKEN, cfg.APP_ID);
   await timerManager.restoreAll(client);
 });
-client.on("interactionCreate", onInteractionCreate(...cfg, client));
+client.on("interactionCreate", onInteractionCreate(client));
 
 client.on("guildMemberAdd", onGuildMemberAdd());
 
