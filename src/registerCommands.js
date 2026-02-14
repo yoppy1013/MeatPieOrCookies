@@ -112,27 +112,29 @@ module.exports = async function registerCommands(token, appId, guildId) {
   console.log("commands delete start");
   await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [] });
   console.log("commands delete ok");
+  
   console.log("commands register start", commands.length);
 
 try {
   const res = await rest.put(
-    Routes.applicationGuildCommands(appId , guildId),
+    Routes.applicationGuildCommands(appId, guildId),
     { body: commands },
   );
+
   console.log("commands register ok");
-  // 返り値も見たいなら
-  console.log("registered count:", Array.isArray(res) ? res.length : res);
+  console.log("res type:", typeof res, Array.isArray(res) ? "array" : "");
+  if (Array.isArray(res)) console.log("registered:", res.map(c => c.name).join(", "));
 } catch (e) {
   console.error("commands register FAILED");
   console.error("name:", e?.name);
   console.error("message:", e?.message);
   console.error("code:", e?.code);
   console.error("status:", e?.status);
-  // DiscordAPIError の詳細（discord.js の REST はこれが出ることが多い）
   console.error("rawError:", e?.rawError);
   console.error("errors:", e?.rawError?.errors);
   console.error(e);
   process.exitCode = 1;
 }
+
 
 };
