@@ -20,8 +20,6 @@ const isIgnoredVc = (settings, ch) =>
     && settings.ignoredVoiceChannelIds.includes(ch.id);
 
 
-const isPrivateVc = (ch) => !!ch && PRIVATE_VC_IDS.has(ch.id);
-
 module.exports = function onVoiceStateUpdate({
   vcJoinTimes,
 }) {
@@ -97,7 +95,7 @@ module.exports = function onVoiceStateUpdate({
 
     const oldIsPrivate = isIgnoredVc(settings, oldCh);
     const newIsPrivate = isIgnoredVc(settings, newCh);
-    
+
     // private<->privateは無視
     if (oldIsPrivate && newIsPrivate) return;
 
@@ -120,7 +118,7 @@ module.exports = function onVoiceStateUpdate({
     // ===== 配信/ビデオ開始終了=====
     if (oldState.channelId && newState.channelId && oldState.channelId === newState.channelId) {
       const ch = newState.channel;
-        if (!isPrivateVc(ch)) {
+        if (!isIgnoredVc(settings, ch)) {
           const thumb = member.displayAvatarURL({ size: 256 });
 
     // 配信
