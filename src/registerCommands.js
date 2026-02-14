@@ -5,9 +5,8 @@ const {
   ChannelType,
 } = require("discord.js");
 require("dotenv").config();
-const guildId = process.env.DISCORD_GUILD_ID;
 
-module.exports = async function registerCommands(token, appId) {
+module.exports = async function registerCommands(token, appId, guildId) {
 
     console.log("registerCommands appId=", appId);
 
