@@ -17,6 +17,10 @@ function loadAll() {
   }
 }
 
+function getAllGuildSettings() {
+  return loadAll();
+}
+
 function saveAll(all) {
   fs.writeFileSync(FILE, JSON.stringify(all, null, 2), "utf-8");
 }
@@ -58,4 +62,5 @@ module.exports = {
   setGuildSetting,
   addToGuildList,
   removeFromGuildList,
+  getAllGuildSettings
 };
