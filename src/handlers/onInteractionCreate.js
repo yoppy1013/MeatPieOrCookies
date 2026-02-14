@@ -213,6 +213,9 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
       });
       return;
     }
+
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
     const s = getGuildSettings(interaction.guildId);
     const ignoredVCs = s.ignoredVoiceChannelIds ?? [];
     const ignoredText =
@@ -251,7 +254,7 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
    `通知除外VC: ${ignoredText}`,
   ].join("\n");
 
-  await interaction.reply({
+  await interaction.editreply({
     content: text,
   });
 
@@ -264,9 +267,11 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
 
     // 実行者が今入っているVCを取得
     const vc = interaction.member.voice.channel;
+    
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   if (!vc) {
-    await interaction.reply({
+    await interaction.editReply({
       content: "無視したいVCに参加してください。",
       flags: MessageFlags.Ephemeral,
     });
@@ -275,7 +280,7 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
 
   const arr = addToGuildList(guildId, "ignoredVoiceChannelIds", vc.id);
 
-  await interaction.reply({
+  await interaction.editReply({
     content: `このVCを通知除外対象に設定しました: ${vc}（現在 ${arr.length}件）`,
     flags: MessageFlags.Ephemeral,
   });
