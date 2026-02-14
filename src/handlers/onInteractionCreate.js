@@ -30,7 +30,6 @@ module.exports = function onInteractionCreate({  }) {
       "sake",
       "welroll",
       "dewelroll",
-      "status",
       "ignore",
     ]);
 
