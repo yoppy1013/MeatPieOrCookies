@@ -28,7 +28,7 @@ module.exports = function onVoiceChannelStatusUpdate({ voiceStatusCache }) {
       if (oldStatus === newStatus) return;
 
       voiceStatusCache.set(channelId, newStatus);
-
+      /*
       const message = [
         `${vcLink} のステータスメッセージが変更されました。`,
         "```diff",
@@ -38,6 +38,7 @@ module.exports = function onVoiceChannelStatusUpdate({ voiceStatusCache }) {
       ].join("\n");
 
       await logChannel.send(message);
+      */
     } catch (err) {
       console.error("VCステータスメッセージ変更の通知に失敗しました", err);
     }
