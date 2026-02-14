@@ -5,7 +5,7 @@ const {
   addToGuildList,
   removeFromGuildList,
 } = require("../store/guildSettings");
-const { Role, User, GuildMember, MessageFlags } = require("discord.js");
+const {MessageFlags } = require("discord.js");
 
 
 module.exports = function onInteractionCreate({  }) {
@@ -179,8 +179,6 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
 
     const fmtChannel = id => id ? `<#${id}>` : "未設定";
     const fmtRole = id => `<@&${id}>`;
-    const fmtUser = id => `<@${id}>`;
-    const allow = s.allowIds ?? [];
     const welcomeRoles = s.welcomeRoleIds ?? [];
     const text = [
     "**現在の設定**",
@@ -205,7 +203,6 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
 
   await interaction.reply({
     content: text,
-    flags: MessageFlags.Ephemeral,
   });
 
     return;
