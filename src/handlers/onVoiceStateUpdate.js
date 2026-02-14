@@ -1,6 +1,16 @@
 const { getGuildSettings } = require("../store/guildSettings");
 const { EmbedBuilder } = require("discord.js");
 
+const formatTime = () => {
+  const d = new Date();
+  return d.toLocaleString("ja-JP", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+};
+
 module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
   return async (oldState, newState) => {
     const member = newState.member || oldState.member;
@@ -41,11 +51,7 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
         .setDescription(description)
         .setThumbnail(thumbnail ? thumbnail.url : null)
         .setColor(color)
-        .setTimestamp(new Date())
-        .setAuthor({
-          name: userName,
-          iconURL: member.displayAvatarURL({ size: 128 }),
-        });
+        .setTimestamp(formatTime())
 
       if (fields.length) emb.addFields(fields);
       return emb;
