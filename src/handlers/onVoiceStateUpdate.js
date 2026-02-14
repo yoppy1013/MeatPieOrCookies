@@ -11,9 +11,16 @@ const formatDateTime = () => {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-  }).replace(/\//g, "/");
+  });
 };
 
+// 通知例外チャンネル（プライベートVC）
+const PRIVATE_VC_IDS = new Set([
+  "1440349567634899014",
+  "1472185306760478772",
+]);
+
+const isPrivateVc = (ch) => !!ch && PRIVATE_VC_IDS.has(ch.id);
 
 module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
   return async (oldState, newState) => {
@@ -24,10 +31,7 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
     const logChannelId = settings.voiceLogChannelId;
     if (!logChannelId) return;
 
-    const logChannel = await member.guild.channels
-      .fetch(logChannelId)
-      .catch(() => null);
-
+    const logChannel = await member.guild.channels.fetch(logChannelId).catch(() => null);
     if (!logChannel || !logChannel.isTextBased()) return;
 
     const userName = member.displayName || member.user.username;
@@ -49,7 +53,7 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
       return parts.join("");
     };
 
-    const makeEmbed = ({ title, description, color,thumbnail, fields = [] }) => {
+    const makeEmbed = ({ title, description, color, thumbnail, fields = [] }) => {
       const emb = new EmbedBuilder()
         .setTitle(title)
         .setDescription(description)
@@ -60,10 +64,39 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
       return emb;
     };
 
-    // ===== VC間移動 =====
+    // ===== ここが肝：プライベートVCの扱いを先に正規化する =====
+    const oldCh = oldState.channel; // null の可能性あり
+    const newCh = newState.channel;
+
+    const oldIsPrivate = isPrivateVc(oldCh);
+    const newIsPrivate = isPrivateVc(newCh);
+
+    // private<->privateは無視
+    if (oldIsPrivate && newIsPrivate) return;
+
+    // none->privateは無視
+    if (!oldCh && newIsPrivate) return;
+
+    // private->noneは無視
+    if (oldIsPrivate && !newCh) return;
+
+    // normal->privateはnormalからの退出として扱う
+    if (oldCh && !oldIsPrivate && newIsPrivate) {
+      // 退出イベントにするためにnew を null 扱いにする
+      newState = { ...newState, channelId: null, channel: null };
+    }
+
+    // normal->privateはnormalへの参加として扱う
+    if (oldIsPrivate && newCh && !newIsPrivate) {
+      // 参加イベントにするために old を null 扱いにする
+      oldState = { ...oldState, channelId: null, channel: null };
+    }
+
+
+    // 移動
     if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
-      const oldCh = oldState.channel;
-      const newCh = newState.channel;
+      const fromCh = oldState.channel;
+      const toCh = newState.channel;
 
       let durationField = null;
       if (vcJoinTimes.has(userId)) {
@@ -71,48 +104,49 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
         durationField = { name: "通話時間", value: d, inline: true };
       }
 
-      await logChannel.send({
-        embeds: [
-          makeEmbed({
-            title: "VCを移動しました",
-            description: `${oldCh} から ${newCh} へ移動しました`,
-            thumbnail: { url: member.displayAvatarURL({ size: 256 }) },
-            color: 0x3498db, // 青
-            fields: [
-              { name: "ユーザー", value: `<@${userId}>`, inline: true },
-              ...(durationField ? [durationField] : []),
-            ],
-          }),
-        ],
-      }).catch(() => null);
+      await logChannel
+        .send({
+          embeds: [
+            makeEmbed({
+              title: "VCを移動しました",
+              description: `${fromCh} から ${toCh} へ移動しました`,
+              thumbnail: { url: member.displayAvatarURL({ size: 256 }) },
+              color: 0x3498db,
+              fields: [
+                { name: "ユーザー", value: `<@${userId}>`, inline: true },
+                ...(durationField ? [durationField] : []),
+              ],
+            }),
+          ],
+        })
+        .catch(() => null);
 
-      // 移動なので計測開始時間を更新
       vcJoinTimes.set(userId, Date.now());
       return;
     }
 
-    // ===== 参加 =====
+    // 参加
     if (!oldState.channelId && newState.channelId) {
       const ch = newState.channel;
       vcJoinTimes.set(userId, Date.now());
 
-      await logChannel.send({
-        embeds: [
-          makeEmbed({
-            title: "VCに参加しました",
-            description: `${ch} に参加しました`,
-            thumbnail: { url: member.displayAvatarURL({ size: 256 }) },
-            color: 0x2ecc71, // 緑
-            fields: [
-              { name: "ユーザー", value: `<@${userId}>`, inline: true },
-            ],
-          }),
-        ],
-      }).catch(() => null);
+      await logChannel
+        .send({
+          embeds: [
+            makeEmbed({
+              title: "VCに参加しました",
+              description: `${ch} に参加しました`,
+              thumbnail: { url: member.displayAvatarURL({ size: 256 }) },
+              color: 0x2ecc71,
+              fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
+            }),
+          ],
+        })
+        .catch(() => null);
       return;
     }
 
-    // ===== 退出 =====
+    // 退出
     if (oldState.channelId && !newState.channelId) {
       const ch = oldState.channel;
 
@@ -122,20 +156,22 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
         vcJoinTimes.delete(userId);
       }
 
-      await logChannel.send({
-        embeds: [
-          makeEmbed({
-            title: "VCから退出しました",
-            description: `${ch} から退出しました`,
-            thumbnail: { url: member.displayAvatarURL({ size: 256 }) },
-            color: 0xe74c3c, // 赤
-            fields: [
-              { name: "ユーザー", value: `<@${userId}>`, inline: true },
-              { name: "通話時間", value: duration, inline: true },
-            ],
-          }),
-        ],
-      }).catch(() => null);
+      await logChannel
+        .send({
+          embeds: [
+            makeEmbed({
+              title: "VCから退出しました",
+              description: `${ch} から退出しました`,
+              thumbnail: { url: member.displayAvatarURL({ size: 256 }) },
+              color: 0xe74c3c,
+              fields: [
+                { name: "ユーザー", value: `<@${userId}>`, inline: true },
+                { name: "通話時間", value: duration, inline: true },
+              ],
+            }),
+          ],
+        })
+        .catch(() => null);
     }
   };
 };
