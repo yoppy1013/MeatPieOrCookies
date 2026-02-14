@@ -1,30 +1,28 @@
 const { getGuildSettings } = require("../store/guildSettings");
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
-  return (oldState, newState) => {
+  return async (oldState, newState) => {
     const member = newState.member || oldState.member;
     if (!member) return;
 
     const settings = getGuildSettings(member.guild.id);
     const logChannelId = settings.voiceLogChannelId;
+    if (!logChannelId) return;
 
-    if (!logChannelId) return; // /voice で設定されるまでログを送らない
+    const logChannel = await member.guild.channels
+      .fetch(logChannelId)
+      .catch(() => null);
 
-    const logChannel = member.guild.channels.cache.get(logChannelId);
     if (!logChannel || !logChannel.isTextBased()) return;
-    if (!logChannel) {
-      console.error(`${logChannelId}が見つかりません。`);
-      return;
-    }
 
     const userName = member.displayName || member.user.username;
     const userId = member.id;
 
-
     const calculateDuration = (startTime) => {
       const durationMs = Date.now() - startTime;
       const seconds = Math.floor(durationMs / 1000);
-      if (seconds < 0) return "0秒";
+      if (seconds <= 0) return "0秒";
 
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
@@ -33,47 +31,96 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
       const parts = [];
       if (hours > 0) parts.push(`${hours}時間`);
       if (minutes > 0) parts.push(`${minutes}分`);
-      if (remainingSeconds > 0 || (hours === 0 && minutes === 0)) parts.push(`${remainingSeconds}秒`);
+      parts.push(`${remainingSeconds}秒`);
       return parts.join("");
     };
 
-    // VC間移動
+    const makeEmbed = ({ title, description, color, fields = [] }) => {
+      const emb = new EmbedBuilder()
+        .setTitle(title)
+        .setDescription(description)
+        .setColor(color)
+        .setTimestamp(new Date())
+        .setAuthor({
+          name: userName,
+          iconURL: member.displayAvatarURL({ size: 128 }),
+        });
+
+      if (fields.length) emb.addFields(fields);
+      return emb;
+    };
+
+    // ===== VC間移動 =====
     if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
-      const oldVcLink = oldState.channel.toString();
+      const oldCh = oldState.channel;
+      const newCh = newState.channel;
 
-      let durationText = "";
+      let durationField = null;
       if (vcJoinTimes.has(userId)) {
-        durationText = `\n(通話時間: ${calculateDuration(vcJoinTimes.get(userId))})`;
+        const d = calculateDuration(vcJoinTimes.get(userId));
+        durationField = { name: "通話時間", value: d, inline: true };
       }
 
-      logChannel.send(`${oldVcLink}から**${userName}**が移動しました。${durationText}`);
+      await logChannel.send({
+        embeds: [
+          makeEmbed({
+            title: "VCを移動しました",
+            description: `${oldCh} から ${newCh} へ移動しました`,
+            color: 0x3498db, // 青
+            fields: [
+              { name: "ユーザー", value: `<@${userId}>`, inline: true },
+              ...(durationField ? [durationField] : []),
+            ],
+          }),
+        ],
+      }).catch(() => null);
 
+      // 移動なので計測開始時間を更新
       vcJoinTimes.set(userId, Date.now());
-
-      const newVcLink = newState.channel.toString();
-      logChannel.send(`${newVcLink}に**${userName}**が参加しました。`);
       return;
     }
 
-    // 参加
+    // ===== 参加 =====
     if (!oldState.channelId && newState.channelId) {
+      const ch = newState.channel;
       vcJoinTimes.set(userId, Date.now());
-      const vcLink = newState.channel.toString();
-      logChannel.send(`${vcLink}に**${userName}**が参加しました。`);
+
+      await logChannel.send({
+        embeds: [
+          makeEmbed({
+            title: "VCに参加しました",
+            description: `${ch} に参加しました`,
+            color: 0x2ecc71, // 緑
+            fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
+          }),
+        ],
+      }).catch(() => null);
       return;
     }
 
-    // 退出
+    // ===== 退出 =====
     if (oldState.channelId && !newState.channelId) {
-      const vcLink = oldState.channel.toString();
+      const ch = oldState.channel;
 
+      let duration = "計測失敗";
       if (vcJoinTimes.has(userId)) {
-        const duration = calculateDuration(vcJoinTimes.get(userId));
-        logChannel.send(`${vcLink}から**${userName}**が退出しました。\n(通話時間: ${duration})`);
+        duration = calculateDuration(vcJoinTimes.get(userId));
         vcJoinTimes.delete(userId);
-      } else {
-        logChannel.send(`${vcLink}から**${userName}**が退出しました。\n(通話時間: 計測失敗)`);
       }
+
+      await logChannel.send({
+        embeds: [
+          makeEmbed({
+            title: "VCから退出しました",
+            description: `${ch} から退出しました`,
+            color: 0xe74c3c, // 赤
+            fields: [
+              { name: "ユーザー", value: `<@${userId}>`, inline: true },
+              { name: "通話時間", value: duration, inline: true },
+            ],
+          }),
+        ],
+      }).catch(() => null);
     }
   };
 };
