@@ -226,12 +226,17 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
   const arr = addToGuildList(guildId, "ignoredVoiceChannelIds", vc.id);
 
   await interaction.reply({
-    content: `このVCを通知除外にしました: ${vc}（現在 ${arr.length}件）`,
+    content: `このVCを通知除外対象に設定しました: ${vc}（現在 ${arr.length}件）`,
     flags: MessageFlags.Ephemeral,
   });
 
   return;
 }
+    // ようこそ
+    if (interaction.commandName === "yokoso") {
+      await interaction.reply({ content: "ようこそいらいしゃい！みんな来ると思ってミートパイを焼いてたの！それともクッキーがいいかしら？" });
+      return;
+    }
 
 
   };

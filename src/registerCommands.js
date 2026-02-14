@@ -73,6 +73,10 @@ module.exports = async function registerCommands(token, appId) {
     new SlashCommandBuilder()
       .setName("status")
       .setDescription("現在のサーバ設定を表示"),
+
+    new SlashCommandBuilder()
+      .setName("yokoso")
+      .setDescription("入室時メッセージを表示する"),
   ].map(c => c.toJSON());
 
   const rest = new REST({ version: "10" }).setToken(token);
