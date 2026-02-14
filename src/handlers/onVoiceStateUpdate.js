@@ -128,7 +128,7 @@ module.exports = function onVoiceStateUpdate({
           makeEmbed({
             title: newState.streaming ? "配信を開始しました" : "配信を終了しました",
             description: `${ch}`,
-            color: newState.streaming ? 0xf1c40f : 0xf39c12,
+            color: newState.streaming ? 0xd8f255 : 0xffcabf,
             thumbnailUrl: thumb,
             fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
           }),
@@ -143,7 +143,7 @@ module.exports = function onVoiceStateUpdate({
           makeEmbed({
             title: newState.selfVideo ? "ビデオを開始しました" : "ビデオを終了しました",
             description: `${ch}`,
-            color: newState.selfVideo ? 0x9b59b6 : 0x8e44ad,
+            color: newState.selfVideo ? 0x77d9a8 : 0xff8082,
             thumbnailUrl: thumb,
             fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
           }),
@@ -170,7 +170,7 @@ module.exports = function onVoiceStateUpdate({
           new EmbedBuilder()
             .setTitle("VCを移動しました")
             .setDescription(`${fromCh} から ${toCh} へ移動しました`)
-            .setColor(0x3498db)
+            .setColor(0x005aff)
             .setThumbnail(member.displayAvatarURL({ size: 256 }))
             .setFooter({ text: formatDateTime() })
             .addFields([
@@ -194,7 +194,7 @@ module.exports = function onVoiceStateUpdate({
           new EmbedBuilder()
             .setTitle("VCに参加しました")
             .setDescription(`${ch} に参加しました`)
-            .setColor(0x2ecc71)
+            .setColor(0x03af7a)
             .setThumbnail(member.displayAvatarURL({ size: 256 }))
             .setFooter({ text: formatDateTime() })
             .addFields([{ name: "ユーザー", value: `<@${userId}>`, inline: true }]),
@@ -218,7 +218,7 @@ module.exports = function onVoiceStateUpdate({
           new EmbedBuilder()
             .setTitle("VCから退出しました")
             .setDescription(`${ch} から退出しました`)
-            .setColor(0xe74c3c)
+            .setColor(0xff4b00)
             .setThumbnail(member.displayAvatarURL({ size: 256 }))
             .setFooter({ text: formatDateTime() })
             .addFields([
