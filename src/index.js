@@ -28,8 +28,9 @@ client.once("ready", async () => {
   console.log(`サーバに接続しました: ${client.user.tag}`);
 
   await registerCommands(cfg.TOKEN, cfg.APP_ID);
+  await timerManager.restoreAll(client);
 });
-client.on("interactionCreate", onInteractionCreate(cfg));
+client.on("interactionCreate", onInteractionCreate(...cfg, client));
 
 client.on("guildMemberAdd", onGuildMemberAdd());
 
@@ -52,8 +53,6 @@ client.on("messageCreate", onMessageCreate({
   SAKE_CHANNEL_ID: cfg.SAKE_CHANNEL_ID,
   lastMemberFetchAt: state.lastMemberFetchAt,
 }));
-
-client.on("interactionCreate", onInteractionCreate({ client }));
 
 
 client.login(cfg.TOKEN);
