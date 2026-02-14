@@ -187,6 +187,7 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
         ? welcomeRoles.map(fmtRole).join(" ")
         : "なし"
     }`,
+    "",
    `通知除外VC: ${ignoredText}`,
   ].join("\n");
 
