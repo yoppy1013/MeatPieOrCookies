@@ -26,7 +26,8 @@ const client = new Client({
 
 client.once("ready", async () => {
   console.log(`サーバに接続しました: ${client.user.tag}`);
-  console.log("registerCommands guildId=", cfg.GUILD_ID, "appId=", cfg.APP_ID);
+  console.log("ENV DISCORD_GUILD_ID=", process.env.DISCORD_GUILD_ID);
+  console.log("CFG GUILD_ID=", cfg.GUILD_ID);
 
 
   await registerCommands(cfg.TOKEN, cfg.APP_ID, cfg.GUILD_ID);
