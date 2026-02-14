@@ -20,6 +20,10 @@ module.exports = async function registerCommands(token, appId) {
       .setName("voice")
       .setDescription("このチャンネルをVCログ送信先に設定する"),
 
+    new SlashCommandBuilder()
+      .setName("stamsg")
+      .setDescription("このチャンネルをVCステータスメッセージ変更通知の送信先に設定する"),
+
     // 許可追加
     new SlashCommandBuilder()
       .setName("roll")
