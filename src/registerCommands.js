@@ -77,7 +77,27 @@ module.exports = async function registerCommands(token, appId) {
     new SlashCommandBuilder()
       .setName("yokoso")
       .setDescription("入室時メッセージを表示する"),
+
+
+    new SlashCommandBuilder()
+     .setName("timer")
+      .setDescription("指定時刻に自分をVCから切断するタイマー")
+      .addSubcommand((sub) =>
+    sub
+      .setName("set")
+      .setDescription("タイマーを設定する")
+      .addStringOption((opt) =>
+        opt
+          .setName("time")
+          .setDescription("時刻（HH:MM または HH:MM:SS）JST")
+          .setRequired(true)
+      )
+  )
+  .addSubcommand((sub) => sub.setName("cancel").setDescription("タイマーを解除する"))
+  .addSubcommand((sub) => sub.setName("status").setDescription("タイマーの残り時間を表示する"))
+  ,
   ].map(c => c.toJSON());
+
 
   const rest = new REST({ version: "10" }).setToken(token);
 
