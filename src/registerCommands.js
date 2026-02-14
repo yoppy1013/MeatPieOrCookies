@@ -77,13 +77,13 @@ module.exports = async function registerCommands(token, appId) {
 
   const rest = new REST({ version: "10" }).setToken(token);
 
-  
+  /*
   await rest.put(Routes.applicationCommands(appId), { body: [] });
   await rest.put(
     Routes.applicationCommands(appId),
     { body: commands }
   );
-
+  */
   await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [] });
   await rest.put(
     Routes.applicationGuildCommands(appId, guildId),
