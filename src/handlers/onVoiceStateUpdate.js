@@ -134,8 +134,7 @@ module.exports = function onVoiceStateUpdate({
               title: "配信を開始しました",
               description: `${ch} で **${userName}** が配信を開始しました`,
               color: 0xf1c40f,
-              imagePath: STREAM_START_IMAGE,
-              imageName: "stream_start.png",
+              thumbnailUrl: member.displayAvatarURL({ size: 256 }),
               fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
             });
           } else {
@@ -143,8 +142,7 @@ module.exports = function onVoiceStateUpdate({
               title: "配信を終了しました",
               description: `${ch} で **${userName}** が配信を終了しました`,
               color: 0xf39c12,
-              imagePath: STREAM_END_IMAGE,
-              imageName: "stream_end.png",
+              thumbnailUrl: member.displayAvatarURL({ size: 256 }),
               fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
             });
           }
@@ -157,8 +155,7 @@ module.exports = function onVoiceStateUpdate({
               title: "ビデオを開始しました",
               description: `${ch} で **${userName}** がビデオを開始しました`,
               color: 0x9b59b6,
-              imagePath: VIDEO_START_IMAGE,
-              imageName: "video_start.png",
+              thumbnailUrl: member.displayAvatarURL({ size: 256 }),
               fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
             });
           } else {
@@ -166,8 +163,7 @@ module.exports = function onVoiceStateUpdate({
               title: "ビデオを終了しました",
               description: `${ch} で **${userName}** がビデオを終了しました`,
               color: 0x8e44ad,
-              imagePath: VIDEO_END_IMAGE,
-              imageName: "video_end.png",
+              thumbnailUrl: member.displayAvatarURL({ size: 256 }),
               fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
             });
           }
