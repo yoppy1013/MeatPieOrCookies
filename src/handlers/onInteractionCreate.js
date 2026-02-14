@@ -21,7 +21,7 @@ module.exports = function onInteractionCreate({  }) {
 
 // 権限コマンド
     const needsAllow = new Set([
-      "yosokoso",
+      "yokoso",
       "voice",
       "roll",
       "deroll",
