@@ -110,32 +110,25 @@ module.exports = async function registerCommands(token, appId, guildId) {
   );
   */
   console.log("commands delete start");
-  await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [] });
-  console.log("commands delete ok");
-  
-  console.log("commands register start", commands.length);
-  console.log("REGISTER PATCH ACTIVE: before try");
+await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [] });
+console.log("commands delete ok");
+
+const timeout = (ms) =>
+  new Promise((_, rej) => setTimeout(() => rej(new Error("REST timeout")), ms));
+
+console.log("commands register start", commands.length);
 
 try {
-  const res = await rest.put(
-    Routes.applicationGuildCommands(appId, guildId),
-    { body: commands },
-  );
+  const res = await Promise.race([
+    rest.put(Routes.applicationGuildCommands(appId, guildId), { body: commands }),
+    timeout(15000),
+  ]);
 
-  console.log("commands register ok");
-  console.log("res type:", typeof res, Array.isArray(res) ? "array" : "");
-  if (Array.isArray(res)) console.log("registered:", res.map(c => c.name).join(", "));
+  console.log("commands register ok", Array.isArray(res) ? res.length : res);
 } catch (e) {
-  console.error("commands register FAILED");
-  console.error("name:", e?.name);
-  console.error("message:", e?.message);
-  console.error("code:", e?.code);
-  console.error("status:", e?.status);
-  console.error("rawError:", e?.rawError);
-  console.error("errors:", e?.rawError?.errors);
-  console.error(e);
-  process.exitCode = 1;
+  console.error("commands register FAILED", e);
 }
+
 
 
 };
