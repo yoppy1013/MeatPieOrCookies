@@ -81,7 +81,6 @@ module.exports = async function registerCommands(token, appId, guildId) {
       .setName("yokoso")
       .setDescription("入室時メッセージを表示する"),
 
-
     new SlashCommandBuilder()
      .setName("timer")
       .setDescription("指定時刻に自分をVCから切断するタイマー")
@@ -98,7 +97,7 @@ module.exports = async function registerCommands(token, appId, guildId) {
   )
   .addSubcommand((sub) => sub.setName("cancel").setDescription("タイマーを解除する"))
   .addSubcommand((sub) => sub.setName("status").setDescription("タイマーの残り時間を表示する"))
-  ,
+
   ].map(c => c.toJSON());
 
 
@@ -115,10 +114,25 @@ module.exports = async function registerCommands(token, appId, guildId) {
   await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [] });
   console.log("commands delete ok");
   console.log("commands register start", commands.length);
-  await rest.put(
+try {
+  const res = await rest.put(
     Routes.applicationGuildCommands(appId, guildId),
     { body: commands },
   );
   console.log("commands register ok");
+  // 返り値も見たいなら
+  console.log("registered count:", Array.isArray(res) ? res.length : res);
+} catch (e) {
+  console.error("commands register FAILED");
+  console.error("name:", e?.name);
+  console.error("message:", e?.message);
+  console.error("code:", e?.code);
+  console.error("status:", e?.status);
+  // DiscordAPIError の詳細（discord.js の REST はこれが出ることが多い）
+  console.error("rawError:", e?.rawError);
+  console.error("errors:", e?.rawError?.errors);
+  console.error(e);
+  process.exitCode = 1;
+}
 
 };
