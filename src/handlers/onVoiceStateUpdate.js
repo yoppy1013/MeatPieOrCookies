@@ -129,7 +129,7 @@ module.exports = function onVoiceStateUpdate({
         embeds: [
           makeEmbed({
             title: newState.streaming ? "配信を開始しました" : "配信を終了しました",
-            description: `${ch} で **${userName}** が配信を${newState.streaming ? "開始" : "終了"}しました`,
+            description: `${ch}`,
             color: newState.streaming ? 0xf1c40f : 0xf39c12,
             thumbnailUrl: thumb,
             fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
@@ -144,7 +144,7 @@ module.exports = function onVoiceStateUpdate({
         embeds: [
           makeEmbed({
             title: newState.selfVideo ? "ビデオを開始しました" : "ビデオを終了しました",
-            description: `${ch} で **${userName}** がビデオを${newState.selfVideo ? "開始" : "終了"}しました`,
+            description: `${ch}`,
             color: newState.selfVideo ? 0x9b59b6 : 0x8e44ad,
             thumbnailUrl: thumb,
             fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
