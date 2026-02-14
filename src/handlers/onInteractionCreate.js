@@ -61,6 +61,7 @@ function formatRemaining(ms) {
 
 module.exports = function onInteractionCreate({ client}) {
   return async (interaction) => {
+    try {
     if (!interaction.isChatInputCommand()) return;
 
     if (!interaction.guild) {
@@ -254,7 +255,7 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
    `通知除外VC: ${ignoredText}`,
   ].join("\n");
 
-  await interaction.editreply({
+  await interaction.editReply({
     content: text,
   });
 
@@ -354,6 +355,10 @@ if (interaction.commandName === "timer") {
     return;
   }
 }
+} catch (e) {
+    console.error("onInteractionCreate.jsでエラーが発生しました:", e);
+  }
+
 
   };
 };
