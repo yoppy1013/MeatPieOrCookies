@@ -9,7 +9,7 @@ module.exports = function onMessageCreate({
   lastMemberFetchAt,
 }) {
   return async (message) => {
-   // if (message.author.bot) return;
+    if (message.author.bot) return;
 
     let flag = 0;
 
