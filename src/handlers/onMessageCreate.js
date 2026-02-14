@@ -6,8 +6,6 @@ module.exports = function onMessageCreate({
   client,
   MENTION_IMAGE,
   YONDENAI_IMAGE,
-  MESHI_CHANNEL_ID,
-  SAKE_CHANNEL_ID,
   lastMemberFetchAt,
 }) {
   return async (message) => {
