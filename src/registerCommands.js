@@ -108,10 +108,14 @@ module.exports = async function registerCommands(token, appId) {
     { body: commands }
   );
   */
+  console.log("commands delete start");
   await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [] });
+  console.log("commands delete ok");
+  console.log("commands register start", commands.length);
   await rest.put(
     Routes.applicationGuildCommands(appId, guildId),
     { body: commands },
   );
+  console.log("commands register ok");
 
 };
