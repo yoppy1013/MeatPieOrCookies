@@ -51,7 +51,6 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
         .setDescription(description)
         .setThumbnail(thumbnail ? thumbnail.url : null)
         .setColor(color)
-        .setTimestamp(formatTime())
 
       if (fields.length) emb.addFields(fields);
       return emb;
@@ -78,6 +77,7 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
             fields: [
               { name: "ユーザー", value: `<@${userId}>`, inline: true },
               ...(durationField ? [durationField] : []),
+              { name: "時刻", value: formatTime(), inline: true },
             ],
           }),
         ],
@@ -100,7 +100,10 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
             description: `${ch} に参加しました`,
             thumbnail: { url: member.displayAvatarURL({ size: 256 }) },
             color: 0x2ecc71, // 緑
-            fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
+            fields: [
+              { name: "ユーザー", value: `<@${userId}>`, inline: true },
+              { name: "時刻", value: formatTime(), inline: true },
+            ],
           }),
         ],
       }).catch(() => null);
@@ -127,6 +130,7 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
             fields: [
               { name: "ユーザー", value: `<@${userId}>`, inline: true },
               { name: "通話時間", value: duration, inline: true },
+              { name: "時刻", value: formatTime(), inline: true },
             ],
           }),
         ],
