@@ -40,7 +40,7 @@ module.exports = function onMessageCreate({
   }
 
   const settings = getGuildSettings(message.guild.id);
-  const srcId = settings.sourceMeshiChannelId;
+  const srcId = settings.meshiSourceChannelId;
 
   if (!srcId) {
     await message.channel.send("めしてろ画像抽出元が未設定です。管理者に問い合わせてください。");
@@ -74,7 +74,7 @@ if (message.content.includes("酒")) {
   }
 
   const settings = getGuildSettings(message.guild.id);
-  const srcId = settings.sourceSakeChannelId;
+  const srcId = settings.sakeSourceChannelId;
 
   if (!srcId) {
     await message.channel.send("酒画像抽出元が未設定です。管理者に問い合わせてください。");
