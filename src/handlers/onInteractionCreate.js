@@ -23,6 +23,7 @@ module.exports = function onInteractionCreate({  }) {
     const needsAllow = new Set([
       "yokoso",
       "voice",
+      "stamsg",
       "roll",
       "deroll",
       "meshitero",
@@ -54,6 +55,16 @@ module.exports = function onInteractionCreate({  }) {
       await interaction.reply({ content: ` ${ch}をVCログ送信先に設定しました`, flags: MessageFlags.Ephemeral });
       return;
     }
+
+    // VCステータス通知先
+if (interaction.commandName === "stamsg") {
+  setGuildSetting(interaction.guildId, "voiceStatusLogChannelId", ch.id);
+  await interaction.reply({
+    content: `${ch} をVCステータス通知先に設定しました`,
+    flags: MessageFlags.Ephemeral,
+  });
+  return;
+}
 
 // 許可追加・剥奪
 if (interaction.commandName === "roll" || interaction.commandName === "deroll") {
@@ -176,6 +187,7 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
     "",
     `入室メッセージ: ${fmtChannel(s.welcomeChannelId)}`,
     `VCログ: ${fmtChannel(s.voiceLogChannelId)}`,
+    `VCステータス通知: ${fmtChannel(s.voiceStatusLogChannelId)}`,
     `めしてろ画像元: ${fmtChannel(s.meshiSourceChannelId)}`,
     `酒画像元: ${fmtChannel(s.sakeSourceChannelId)}`,
     "",
