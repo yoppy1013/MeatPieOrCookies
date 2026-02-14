@@ -26,6 +26,8 @@ const client = new Client({
 
 client.once("ready", async () => {
   console.log(`サーバに接続しました: ${client.user.tag}`);
+  console.log("registerCommands guildId=", cfg.GUILD_ID, "appId=", cfg.APP_ID);
+
 
   await registerCommands(cfg.TOKEN, cfg.APP_ID);
   await timerManager.restoreAll(client);
