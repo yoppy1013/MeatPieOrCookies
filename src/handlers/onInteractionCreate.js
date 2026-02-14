@@ -59,7 +59,7 @@ function formatRemaining(ms) {
 
 
 
-module.exports = function onInteractionCreate({ client }) {
+module.exports = function onInteractionCreate({ client}) {
   return async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
