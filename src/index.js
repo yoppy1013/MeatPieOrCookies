@@ -8,6 +8,7 @@ const onVoiceChannelStatusUpdate = require("./handlers/onVoiceChannelStatusUpdat
 const onMessageCreate = require("./handlers/onMessageCreate");
 const registerCommands = require("./registerCommands");
 const onInteractionCreate = require("./handlers/onInteractionCreate");
+const timerManager = require("./utils/timerManager");
 
 console.log("TOKENの読込に成功しました");
 
@@ -51,5 +52,8 @@ client.on("messageCreate", onMessageCreate({
   SAKE_CHANNEL_ID: cfg.SAKE_CHANNEL_ID,
   lastMemberFetchAt: state.lastMemberFetchAt,
 }));
+
+client.on("interactionCreate", onInteractionCreate({ client }));
+
 
 client.login(cfg.TOKEN);

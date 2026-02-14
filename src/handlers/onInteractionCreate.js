@@ -6,9 +6,60 @@ const {
   removeFromGuildList,
 } = require("../store/guildSettings");
 const {MessageFlags } = require("discord.js");
+const timerManager = require("../utils/timerManager");
+
+function parseTimeToNextJstDate(timeStr) {
+  const m = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(timeStr);
+  if (!m) return null;
+
+  const hh = Number(m[1]);
+  const mm = Number(m[2]);
+  const ss = m[3] ? Number(m[3]) : 0;
+  if (hh < 0 || hh > 23 || mm < 0 || mm > 59 || ss < 0 || ss > 59) return null;
+
+  const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
+  const nowUtcMs = Date.now();
+  const nowJst = new Date(nowUtcMs + JST_OFFSET_MS);
+
+  const targetJst = new Date(nowJst);
+  targetJst.setHours(hh, mm, ss, 0);
+
+  if (targetJst.getTime() <= nowJst.getTime()) {
+    targetJst.setDate(targetJst.getDate() + 1);
+  }
+
+  return new Date(targetJst.getTime() - JST_OFFSET_MS); // UTCに戻す
+}
+
+function formatJstDateTime(msUtc) {
+  const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
+  const d = new Date(msUtc + JST_OFFSET_MS);
+  const yyyy = d.getFullYear();
+  const MM = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const HH = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  const ss = String(d.getSeconds()).padStart(2, "0");
+  return `${yyyy}/${MM}/${dd} ${HH}:${mm}:${ss}`;
+}
+
+function formatRemaining(ms) {
+  if (ms <= 0) return "0秒";
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const r = s % 60;
+  const parts = [];
+  if (h) parts.push(`${h}時間`);
+  if (m) parts.push(`${m}分`);
+  parts.push(`${r}秒`);
+  return parts.join("");
+}
 
 
-module.exports = function onInteractionCreate({  }) {
+
+
+module.exports = function onInteractionCreate({ client }) {
   return async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
@@ -237,6 +288,67 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
       return;
     }
 
+
+// タイマー
+if (interaction.commandName === "timer") {
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+  const sub = interaction.options.getSubcommand();
+  const guildId = interaction.guildId;
+  const userId = interaction.user.id;
+
+  // ---- cancel ----
+  if (sub === "cancel") {
+    const ok = timerManager.cancelTimer(guildId, userId);
+    await interaction.editReply(ok ? "タイマーを解除しました" : "タイマーは設定されていません");
+    return;
+  }
+
+  // ---- status ----
+  if (sub === "status") {
+    const t = timerManager.getTimer(guildId, userId);
+    if (!t) {
+      await interaction.editReply("タイマーは設定されていません。");
+      return;
+    }
+    await interaction.editReply(
+      `タイマー設定中です\n実行予定: **${formatJstDateTime(t.fireAtMs)}**\n残り: **${t.remaining}**`
+    );
+    return;
+  }
+
+  // ---- set ----
+  if (sub === "set") {
+    const timeStr = interaction.options.getString("time", true);
+    const fireAt = parseTimeToNextJstDate(timeStr);
+    if (!fireAt) {
+      await interaction.editReply("時刻は `HH:MM` または `HH:MM:SS` で指定してください");
+      return;
+    }
+
+    // 実行者がVCにいるか確認
+    const member = interaction.member;
+    if (!member?.voice?.channelId) {
+      await interaction.editReply("まずVCに参加してから `/timer set` を実行してください");
+      return;
+    }
+
+    const fireAtMs = fireAt.getTime();
+    const delayMs = fireAtMs - Date.now();
+    if (delayMs <= 0 || delayMs > 24 * 60 * 60 * 1000) {
+      await interaction.editReply("時刻が不正です");
+      return;
+    }
+
+    //永続化、10分前DM、再起動復元
+    timerManager.setTimer(client, guildId, userId, fireAtMs);
+
+    await interaction.editReply(
+      `**${formatJstDateTime(fireAtMs)}** にVCから切断します。\n DMを許可している場合、10分前にDMで通知します \n取り消すとき: \`/timer cancel\`\n確認するとき: \`/timer status\``
+    );
+    return;
+  }
+}
 
   };
 };
