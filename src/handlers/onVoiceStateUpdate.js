@@ -17,8 +17,9 @@ module.exports = function onVoiceStateUpdate({ vcJoinTimes }) {
       return;
     }
 
-    const userName = member.user.tag;
+    const userName = member.displayName || member.user.username;
     const userId = member.id;
+
 
     const calculateDuration = (startTime) => {
       const durationMs = Date.now() - startTime;
