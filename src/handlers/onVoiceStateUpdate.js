@@ -24,10 +24,6 @@ const isPrivateVc = (ch) => !!ch && PRIVATE_VC_IDS.has(ch.id);
 
 module.exports = function onVoiceStateUpdate({
   vcJoinTimes,
-  STREAM_START_IMAGE,
-  STREAM_END_IMAGE,
-  VIDEO_START_IMAGE,
-  VIDEO_END_IMAGE,
 }) {
   return async (oldState, newState) => {
     const member = newState.member || oldState.member;
@@ -123,53 +119,42 @@ module.exports = function onVoiceStateUpdate({
 
     // ===== 配信/ビデオ開始終了=====
     if (oldState.channelId && newState.channelId && oldState.channelId === newState.channelId) {
-      const ch = newState.channel; // 現在いるVC
-      if (isPrivateVc(ch)) {
-        // プライベートVCでの配信/ビデオは通知しない
-      } else {
-        // 配信
-        if (oldState.streaming !== newState.streaming) {
-          if (newState.streaming) {
-            await sendEmbedWithLocalThumb({
-              title: "配信を開始しました",
-              description: `${ch} で **${userName}** が配信を開始しました`,
-              color: 0xf1c40f,
-              thumbnailUrl: member.displayAvatarURL({ size: 256 }),
-              fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
-            });
-          } else {
-            await sendEmbedWithLocalThumb({
-              title: "配信を終了しました",
-              description: `${ch} で **${userName}** が配信を終了しました`,
-              color: 0xf39c12,
-              thumbnailUrl: member.displayAvatarURL({ size: 256 }),
-              fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
-            });
-          }
-        }
+      const ch = newState.channel;
+        if (!isPrivateVc(ch)) {
+          const thumb = member.displayAvatarURL({ size: 256 });
 
-        // ビデオ
-        if (oldState.selfVideo !== newState.selfVideo) {
-          if (newState.selfVideo) {
-            await sendEmbedWithLocalThumb({
-              title: "ビデオを開始しました",
-              description: `${ch} で **${userName}** がビデオを開始しました`,
-              color: 0x9b59b6,
-              thumbnailUrl: member.displayAvatarURL({ size: 256 }),
-              fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
-            });
-          } else {
-            await sendEmbedWithLocalThumb({
-              title: "ビデオを終了しました",
-              description: `${ch} で **${userName}** がビデオを終了しました`,
-              color: 0x8e44ad,
-              thumbnailUrl: member.displayAvatarURL({ size: 256 }),
-              fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
-            });
-          }
-        }
-      }
+    // 配信
+    if (oldState.streaming !== newState.streaming) {
+      await logChannel.send({
+        embeds: [
+          makeEmbed({
+            title: newState.streaming ? "配信を開始しました" : "配信を終了しました",
+            description: `${ch} で **${userName}** が配信を${newState.streaming ? "開始" : "終了"}しました`,
+            color: newState.streaming ? 0xf1c40f : 0xf39c12,
+            thumbnailUrl: thumb,
+            fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
+          }),
+        ],
+      }).catch(() => null);
     }
+
+    // ビデオ
+    if (oldState.selfVideo !== newState.selfVideo) {
+      await logChannel.send({
+        embeds: [
+          makeEmbed({
+            title: newState.selfVideo ? "ビデオを開始しました" : "ビデオを終了しました",
+            description: `${ch} で **${userName}** がビデオを${newState.selfVideo ? "開始" : "終了"}しました`,
+            color: newState.selfVideo ? 0x9b59b6 : 0x8e44ad,
+            thumbnailUrl: thumb,
+            fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
+          }),
+        ],
+      }).catch(() => null);
+    }
+  }
+}
+
 
     // ===== 移動 =====
     if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
