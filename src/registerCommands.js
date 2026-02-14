@@ -11,6 +11,10 @@ module.exports = async function registerCommands(token, appId) {
 
     console.log("registerCommands appId=", appId);
 
+    if (!guildId) {
+      throw new Error("guildIdが不明です\n環境変数DISCORD_GUILD_IDを確認してください");
+    }
+
   const commands = [
     new SlashCommandBuilder()
       .setName("welcome")

@@ -4,6 +4,7 @@ const path = require("path");
 module.exports = {
   TOKEN: process.env.DISCORD_BOT_TOKEN,
   APP_ID: process.env.DISCORD_APP_ID,
+  GUILD_ID: process.env.DISCORD_GUILD_ID,
 
   // 画像パス
   MENTION_IMAGE: path.join(__dirname, "..", "images", "mention.png"),

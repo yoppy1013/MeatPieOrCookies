@@ -29,7 +29,7 @@ client.once("ready", async () => {
   console.log("registerCommands guildId=", cfg.GUILD_ID, "appId=", cfg.APP_ID);
 
 
-  await registerCommands(cfg.TOKEN, cfg.APP_ID);
+  await registerCommands(cfg.TOKEN, cfg.APP_ID, cfg.GUILD_ID);
   await timerManager.restoreAll(client);
 });
 client.on("interactionCreate", onInteractionCreate(client));
