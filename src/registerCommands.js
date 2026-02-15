@@ -123,6 +123,11 @@ const timeout = (ms) =>
   new Promise((_, rej) => setTimeout(() => rej(new Error("REST timeout")), ms));
 
 console.log("commands register start", commands.length);
+const body = commands.map(c => (typeof c?.toJSON === "function" ? c.toJSON() : c));
+
+const json = JSON.stringify(body);
+console.log("commands payload bytes =", Buffer.byteLength(json, "utf8"));
+console.log("first command name =", body[0]?.name);
 
 try {
   const res = await Promise.race([
