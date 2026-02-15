@@ -1,20 +1,22 @@
+const dns = require("dns");
+dns.setDefaultResultOrder("ipv4first");
+
+
 const {
   REST,
   Routes,
-  SlashCommandBuilder,
-  ChannelType,
+  SlashCommandBuilder
 } = require("discord.js");
-
-const dns = require("dns");
-dns.setDefaultResultOrder("ipv4first");
 
 module.exports = async function registerCommands(token, appId, guildId) {
 
 console.log("--- コマンド登録プロセス開始 ---");
   console.log("AppID:", appId);
   console.log("GuildID:", guildId);
-  const rest = new REST({ version: "10" }).setToken(token);
-
+const rest = new REST({ 
+  version: "10",
+  timeout: 15000 // 15秒でタイムアウトさせる設定を追加
+}).setToken(token);
     if (!guildId) {
       throw new Error("guildIdが不明です\n環境変数DISCORD_GUILD_IDを確認してください");
     }
