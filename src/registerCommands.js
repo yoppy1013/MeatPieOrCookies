@@ -119,24 +119,23 @@ await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [] });
 console.log("commands delete ok");
 */
 
-const timeout = (ms) =>
-  new Promise((_, rej) => setTimeout(() => rej(new Error("REST timeout")), ms));
+const all = commands.map(c => (typeof c?.toJSON === "function" ? c.toJSON() : c));
 
-console.log("commands register start", commands.length);
-const body = [ (typeof commands[0]?.toJSON === "function" ? commands[0].toJSON() : commands[0]) ];
+for (const cmd of all) {
+  console.log("try:", cmd.name);
+  try {
+    await Promise.race([
+      rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [cmd] }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 15000)),
+    ]);
+    console.log("ok:", cmd.name);
+  } catch (e) {
+    console.error("FAILED:", cmd.name, e?.message);
+    console.log("bad command object:", JSON.stringify(cmd, null, 2));
+    break;
+  }
+}
 
-const json = JSON.stringify(body);
-console.log("commands payload bytes =", Buffer.byteLength(json, "utf8"));
-console.log("payload json =", JSON.stringify(body, null, 2));
-console.log("first command name =", body[0]?.name);
-
-console.log("register only one:", body[0]?.name);
-
-await rest.put(
-  Routes.applicationGuildCommands(appId, guildId),
-  { body }
-);
-console.log("one command register ok");
 
 
 
