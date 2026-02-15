@@ -1,3 +1,7 @@
+const { REST, Routes, SlashCommandBuilder } = require("discord.js"); // ← ここが重要！
+const dns = require("dns");
+dns.setDefaultResultOrder("ipv4first");
+
 module.exports = async function registerCommands(token, appId, guildId) {
   console.log("--- コマンド登録プロセス開始 ---");
   
