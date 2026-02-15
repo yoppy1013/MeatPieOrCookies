@@ -10,7 +10,10 @@ dns.setDefaultResultOrder("ipv4first");
 
 module.exports = async function registerCommands(token, appId, guildId) {
 
-    console.log("registerCommands appId=", appId);
+console.log("--- コマンド登録プロセス開始 ---");
+  console.log("AppID:", appId);
+  console.log("GuildID:", guildId);
+  const rest = new REST({ version: "10" }).setToken(token);
 
     if (!guildId) {
       throw new Error("guildIdが不明です\n環境変数DISCORD_GUILD_IDを確認してください");
@@ -102,9 +105,6 @@ module.exports = async function registerCommands(token, appId, guildId) {
 
   ].map(c => c.toJSON());
 
-
-  const rest = new REST({ version: "10" }).setToken(token);
-
   /*
   await rest.put(Routes.applicationCommands(appId), { body: [] });
   await rest.put(
@@ -118,23 +118,29 @@ await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [] });
 console.log("commands delete ok");
 */
 
-const all = commands.map(c => (typeof c?.toJSON === "function" ? c.toJSON() : c));
-
 try {
-  console.log("スラッシュコマンドの登録を開始します...");
-  
-  await rest.put(
-    Routes.applicationGuildCommands(appId, guildId),
-    { body: all }
-  );
-  
-  console.log("すべてのコマンドが正常に登録されました！");
-} catch (error) {
-  console.error("コマンド登録中にエラーが発生しました:");
-  console.error(error);
-}
+    // 1. 既存のギルドコマンドを一旦空にする（リセット）
+    console.log("既存のコマンドをクリアしています...");
+    await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [] });
 
+    // 2. 新しいリストを一括で登録する
+    console.log(`${commands.length} 個のコマンドを送信中...`);
+    const data = await rest.put(
+      Routes.applicationGuildCommands(appId, guildId),
+      { body: commands }
+    );
 
-}
+    console.log(`成功しました！ ${data.length} 個のコマンドが有効です。`);
+  } catch (error) {
+    console.error(" 登録失敗:");
+    if (error.response) {
+      // APIからの詳細なエラー応答がある場合
+      console.error("Status:", error.response.status);
+      console.error("Data:", JSON.stringify(error.response.data, null, 2));
+    } else {
+      console.error(error);
+    }
+  }
+};
 
 
