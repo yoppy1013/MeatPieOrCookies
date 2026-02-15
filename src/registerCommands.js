@@ -3,7 +3,7 @@ const dns = require("dns");
 dns.setDefaultResultOrder("ipv4first");
 
 module.exports = async function registerCommands(token, appId, guildId) {
-  console.log("--- コマンド登録プロセス開始 ---");
+  console.log("DEBUG: 1. 関数が呼ばれました");
   
   const rest = new REST({ version: "10", timeout: 10000 }).setToken(token);
 
@@ -25,17 +25,20 @@ module.exports = async function registerCommands(token, appId, guildId) {
       .addSubcommand(sub => sub.setName("cancel").setDescription("タイマー解除"))
       .addSubcommand(sub => sub.setName("status").setDescription("残り時間確認"))
   ].map(c => c.toJSON());
+  console.log("DEBUG: 2. コマンドのJSON化完了");
 
   try {
     console.log(`${commands.length} 個のコマンドを送信中... (10秒以内に応答がない場合はタイムアウトします)`);
+    console.log("DEBUG: 3. rest.put を実行します...");
     
     const data = await rest.put(
       Routes.applicationGuildCommands(appId, guildId),
       { body: commands }
     );
-
+    console.log("DEBUG: 4. rest.put から応答が返ってきました！");
     console.log(`成功: ${data.length} 個のコマンドが有効になりました！`);
   } catch (error) {
+    console.log("DEBUG: 5. エラーをキャッチしました");
     console.error("登録プロセスでエラーが発生しました:");
     
     if (error.rawError && error.rawError.errors) {
