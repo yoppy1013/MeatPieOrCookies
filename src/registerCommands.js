@@ -124,7 +124,7 @@ const all = commands.map(c => (typeof c?.toJSON === "function" ? c.toJSON() : c)
 for (const cmd of all) {
   console.log("try:", cmd.name);
   try {
-if (cmd.name === "voice") {
+if (cmd.name === "voicelog") {
   console.log("fetch test for voice");
 
   const url = `https://discord.com/api/v10/applications/${appId}/guilds/${guildId}/commands`;
