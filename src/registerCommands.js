@@ -100,6 +100,7 @@ module.exports = async function registerCommands(token, appId, guildId) {
   )
   .addSubcommand((sub) => sub.setName("cancel").setDescription("タイマーを解除する"))
   .addSubcommand((sub) => sub.setName("status").setDescription("タイマーの残り時間を表示する"))
+
   ].map(c => c.toJSON());
 
 
@@ -112,9 +113,11 @@ module.exports = async function registerCommands(token, appId, guildId) {
     { body: commands }
   );
   */
+ /*
   console.log("commands delete start");
 await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [] });
 console.log("commands delete ok");
+*/
 
 const timeout = (ms) =>
   new Promise((_, rej) => setTimeout(() => rej(new Error("REST timeout")), ms));
