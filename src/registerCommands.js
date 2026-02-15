@@ -124,11 +124,25 @@ const all = commands.map(c => (typeof c?.toJSON === "function" ? c.toJSON() : c)
 for (const cmd of all) {
   console.log("try:", cmd.name);
   try {
-    await Promise.race([
-      rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [cmd] }),
-      new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 15000)),
-    ]);
-    console.log("ok:", cmd.name);
+if (cmd.name === "voice") {
+  console.log("fetch test for voice");
+
+  const url = `https://discord.com/api/v10/applications/${appId}/guilds/${guildId}/commands`;
+
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Authorization": `Bot ${TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify([cmd]),
+  });
+
+  console.log("fetch status:", res.status);
+  console.log("fetch body:", await res.text());
+  break;
+}
+
   } catch (e) {
     console.error("FAILED:", cmd.name, e?.message);
     console.log("bad command object:", JSON.stringify(cmd, null, 2));
