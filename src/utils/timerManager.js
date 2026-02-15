@@ -24,15 +24,16 @@ function formatRemaining(ms) {
 }
 
 function formatJst(msUtc) {
-  const JST = 9 * 60 * 60 * 1000;
-  const d = new Date(msUtc + JST);
-  const yyyy = d.getFullYear();
-  const MM = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  const HH = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  const ss = String(d.getSeconds()).padStart(2, "0");
-  return `${yyyy}/${MM}/${dd} ${HH}:${mm}:${ss}`;
+  return new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(new Date(msUtc)).replace(/\//g, "/");
 }
 
 function clearOne(key) {
@@ -66,13 +67,15 @@ function scheduleOne(client, guildId, userId, fireAtMs) {
         if (!member) return;
 
         const vc = member.voice?.channel;
-        const vcText = vc ? `現在VC: **${vc.name}**` : "現在VC: （未参加）";
+        const vcText = vc ? `参加中のVC: **${vc.name}**` : "参加中のVC: （未参加）";
 
         await member.send(
-          `⏰ <@${userId}> タイマー通知：あと **10分** でVCから切断されます。\n` +
+          `<@${userId}> VC切断予告通知：あと **10分** でVCから切断されます。\n` +
           `予定時刻: **${formatJst(fireAtMs)} (JST)**\n` +
           `${vcText}\n` +
-          `解除するならサーバで \`/timer cancel\` を実行してください。`
+          `解除する場合、サーバ上で \`/timer cancel\` を実行してください。`+
+          `現在の設定は、サーバ上で \`/timer status\` で確認できます。` +
+          `※指定時刻にコマンドが実行されたサーバのVCに参加していない場合、この処理は行われません。`
         ).catch(() => null);
       } catch {
         // DM拒否などは無視
