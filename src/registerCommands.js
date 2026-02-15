@@ -119,38 +119,42 @@ await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [] });
 console.log("commands delete ok");
 */
 
-const all = commands.map(c => (typeof c?.toJSON === "function" ? c.toJSON() : c));
+// ---- fetchで voicelog だけ登録テスト ----
 
-for (const cmd of all) {
-  console.log("try:", cmd.name);
-  try {
-if (cmd.name === "voicelog") {
-  console.log("fetch test for voice");
-
-  const url = `https://discord.com/api/v10/applications/${appId}/guilds/${guildId}/commands`;
-
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: {
-      "Authorization": `Bot ${TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify([cmd]),
-  });
-
-  console.log("fetch status:", res.status);
-  console.log("fetch body:", await res.text());
-  break;
-}
-
-  } catch (e) {
-    console.error("FAILED:", cmd.name, e?.message);
-    console.log("bad command object:", JSON.stringify(cmd, null, 2));
-    break;
-  }
-}
-
-
-
-
+const cmd = {
+  name: "voicelog",
+  description: "このチャンネルをVCログ送信先に設定する",
+  type: 1,
+  options: [],
 };
+
+console.log("FETCH ONE TEST start:", cmd.name);
+
+const url = `https://discord.com/api/v10/applications/${appId}/guilds/${guildId}/commands`;
+
+try {
+  const res = await Promise.race([
+    fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bot ${TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([cmd]),
+    }),
+    new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 15000)),
+  ]);
+
+  const text = await res.text();
+  console.log("fetch status:", res.status);
+  console.log("fetch body:", text);
+} catch (e) {
+  console.error("FETCH ONE TEST failed:", e);
+}
+
+console.log("FETCH ONE TEST done");
+process.exit(0);
+
+}
+
+
