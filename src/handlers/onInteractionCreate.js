@@ -5,7 +5,7 @@ const {
   addToGuildList,
   removeFromGuildList,
 } = require("../store/guildSettings");
-const {MessageFlags } = require("discord.js");
+const {MessageFlags,ChannelType } = require("discord.js");
 const timerManager = require("../utils/timerManager");
 
 function parseTimeToNextJstDate(timeStr) {
