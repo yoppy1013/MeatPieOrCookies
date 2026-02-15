@@ -1,11 +1,11 @@
-const { REST, Routes, SlashCommandBuilder } = require("discord.js"); // ← ここが重要！
+const { REST, Routes, SlashCommandBuilder } = require("discord.js");
 const dns = require("dns");
 dns.setDefaultResultOrder("ipv4first");
 
 module.exports = async function registerCommands(token, appId, guildId) {
   console.log("--- コマンド登録プロセス開始 ---");
   
-  const rest = new REST({ version: "10" }).setToken(token);
+  const rest = new REST({ version: "10", timeout: 10000 }).setToken(token);
 
   const commands = [
     new SlashCommandBuilder().setName("welcome").setDescription("このチャンネルにミートパイかクッキーを送る"),
@@ -21,26 +21,27 @@ module.exports = async function registerCommands(token, appId, guildId) {
     new SlashCommandBuilder().setName("status").setDescription("現在のサーバ設定を表示"),
     new SlashCommandBuilder().setName("yokoso").setDescription("入室時メッセージを表示する"),
     new SlashCommandBuilder().setName("timer").setDescription("VC切断タイマー")
-      .addSubcommand(sub => sub.setName("set").setDescription("設定").addStringOption(opt => opt.setName("time").setDescription("HH:MM").setRequired(true)))
-      .addSubcommand(sub => sub.setName("cancel").setDescription("解除"))
-      .addSubcommand(sub => sub.setName("status").setDescription("確認"))
+      .addSubcommand(sub => sub.setName("set").setDescription("タイマー設定").addStringOption(opt => opt.setName("time").setDescription("HH:MM").setRequired(true)))
+      .addSubcommand(sub => sub.setName("cancel").setDescription("タイマー解除"))
+      .addSubcommand(sub => sub.setName("status").setDescription("残り時間確認"))
   ].map(c => c.toJSON());
 
   try {
-    console.log(`${commands.length} 個のコマンドを一括送信します...`);
+    console.log(`${commands.length} 個のコマンドを送信中... (10秒以内に応答がない場合はタイムアウトします)`);
     
     const data = await rest.put(
       Routes.applicationGuildCommands(appId, guildId),
       { body: commands }
     );
 
-    console.log(`成功: ${data.length} 個のコマンドが登録されました。`);
+    console.log(`成功: ${data.length} 個のコマンドが有効になりました！`);
   } catch (error) {
-    console.error("登録失敗:");
-    if (error.rawError) {
-      console.error(JSON.stringify(error.rawError, null, 2));
+    console.error("登録プロセスでエラーが発生しました:");
+    
+    if (error.rawError && error.rawError.errors) {
+      console.error("【詳細エラー原因】:", JSON.stringify(error.rawError.errors, null, 2));
     } else {
-      console.error(error);
+      console.error("【メッセージ】:", error.message);
     }
   }
 };
