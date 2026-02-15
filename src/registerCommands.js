@@ -25,7 +25,6 @@ module.exports = async function registerCommands(token, appId, guildId) {
       .setName("stamsg")
       .setDescription("このチャンネルをVCステータスメッセージ変更通知の送信先に設定する"),
 
-
     new SlashCommandBuilder()
       .setName("voicelog")
       .setDescription("このチャンネルをVCログ送信先に設定する"),
@@ -121,19 +120,18 @@ console.log("commands delete ok");
 
 const all = commands.map(c => (typeof c?.toJSON === "function" ? c.toJSON() : c));
 
-for (const cmd of all) {
-  console.log("try:", cmd.name);
-  try {
-    await Promise.race([
-      rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [cmd] }),
-      new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 15000)),
-    ]);
-    console.log("ok:", cmd.name);
-  } catch (e) {
-    console.error("FAILED:", cmd.name, e?.message);
-    console.log("bad command object:", JSON.stringify(cmd, null, 2));
-    break;
-  }
+try {
+  console.log("スラッシュコマンドの登録を開始します...");
+  
+  await rest.put(
+    Routes.applicationGuildCommands(appId, guildId),
+    { body: all }
+  );
+  
+  console.log("すべてのコマンドが正常に登録されました！");
+} catch (error) {
+  console.error("コマンド登録中にエラーが発生しました:");
+  console.error(error);
 }
 
 
