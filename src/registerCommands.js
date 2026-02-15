@@ -119,11 +119,11 @@ console.log("commands delete ok");
 */
 
 try {
-    // 1. 既存のギルドコマンドを一旦空にする（リセット）
+    // ギルドコマンドを一旦空にする
     console.log("既存のコマンドをクリアしています...");
     await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [] });
 
-    // 2. 新しいリストを一括で登録する
+    // 新しいリストを一括で登録する
     console.log(`${commands.length} 個のコマンドを送信中...`);
     const data = await rest.put(
       Routes.applicationGuildCommands(appId, guildId),
