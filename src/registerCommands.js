@@ -123,22 +123,19 @@ const timeout = (ms) =>
   new Promise((_, rej) => setTimeout(() => rej(new Error("REST timeout")), ms));
 
 console.log("commands register start", commands.length);
-const body = commands.map(c => (typeof c?.toJSON === "function" ? c.toJSON() : c));
+const body = [ (typeof commands[0]?.toJSON === "function" ? commands[0].toJSON() : commands[0]) ];
 
 const json = JSON.stringify(body);
 console.log("commands payload bytes =", Buffer.byteLength(json, "utf8"));
 console.log("first command name =", body[0]?.name);
 
-try {
-  const res = await Promise.race([
-    rest.put(Routes.applicationGuildCommands(appId, guildId), { body: commands }),
-    timeout(15000),
-  ]);
+console.log("register only one:", body[0]?.name);
 
-  console.log("commands register ok", Array.isArray(res) ? res.length : res);
-} catch (e) {
-  console.error("commands register FAILED", e);
-}
+await rest.put(
+  Routes.applicationGuildCommands(appId, guildId),
+  { body }
+);
+console.log("one command register ok");
 
 
 
