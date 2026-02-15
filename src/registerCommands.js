@@ -1,4 +1,4 @@
-const { REST, Routes, SlashCommandBuilder } = require("discord.js");
+const { REST, Routes, SlashCommandBuilder,ChannelType } = require("discord.js");
 
 module.exports = async function registerCommands(token, appId, guildId) {
   console.log("--- 個別登録プロセス開始 ---");
