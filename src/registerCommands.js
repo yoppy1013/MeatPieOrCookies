@@ -22,12 +22,13 @@ module.exports = async function registerCommands(token, appId, guildId) {
       .setDescription("このチャンネルにミートパイかクッキーを送る"),
 
     new SlashCommandBuilder()
-      .setName("voicelog")
-      .setDescription("このチャンネルをVCログ送信先に設定する"),
-
-    new SlashCommandBuilder()
       .setName("stamsg")
       .setDescription("このチャンネルをVCステータスメッセージ変更通知の送信先に設定する"),
+
+
+    new SlashCommandBuilder()
+      .setName("voicelog")
+      .setDescription("このチャンネルをVCログ送信先に設定する"),
 
     // 許可追加
     new SlashCommandBuilder()
