@@ -263,27 +263,23 @@ if (interaction.commandName === "roll" || interaction.commandName === "deroll") 
     }
 
     // ignore 
-  if (interaction.commandName === "ignore") {
-    const guildId = interaction.guildId;
+if (interaction.commandName === "ignore") {
+  const guildId = interaction.guildId;
 
-    // 実行者が今入っているVCを取得
-    const vc = interaction.member.voice.channel;
-    
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  const targetChannel = interaction.options.getChannel('channel');
 
-  if (!vc) {
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+  if (!targetChannel || targetChannel.type !== ChannelType.GuildVoice) {
     await interaction.editReply({
-      content: "無視したいVCに参加してください。",
-      flags: MessageFlags.Ephemeral,
+      content: "無効なチャンネルです。ボイスチャンネルを指定してください。",
     });
     return;
   }
-
-  const arr = addToGuildList(guildId, "ignoredVoiceChannelIds", vc.id);
+  const arr = addToGuildList(guildId, "ignoredVoiceChannelIds", targetChannel.id);
 
   await interaction.editReply({
-    content: `このVCを通知除外対象に設定しました: ${vc}（現在 ${arr.length}件）`,
-    flags: MessageFlags.Ephemeral,
+    content: `VC「${targetChannel.name}」を通知除外対象に設定しました。（現在 ${arr.length}件）`,
   });
 
   return;
@@ -358,7 +354,6 @@ if (interaction.commandName === "timer") {
 } catch (e) {
     console.error("onInteractionCreate.jsでエラーが発生しました:", e);
   }
-
 
   };
 };
