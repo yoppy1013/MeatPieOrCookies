@@ -120,6 +120,7 @@ await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [] });
 console.log("commands delete ok");
 */
 
+/*
 try {
     // ギルドコマンドを一旦空にする
     console.log("既存のコマンドをクリアしています...");
@@ -143,6 +144,17 @@ try {
       console.error(error);
     }
   }
+    */
+   try {
+    console.log("接続テスト：空の配列を送信します...");
+    await rest.put(
+        Routes.applicationGuildCommands(appId, guildId),
+        { body: [] }
+    );
+    console.log("空の配列の登録に成功しました！接続は生きています。");
+} catch (e) {
+    console.error("接続自体に失敗しました:", e.message);
+}
 };
 
 
