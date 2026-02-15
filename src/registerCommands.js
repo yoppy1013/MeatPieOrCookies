@@ -120,6 +120,10 @@ console.log("commands delete ok");
 */
 
 // ---- fetchで voicelog だけ登録テスト ----
+const TOKEN = process.env.DISCORD_BOT_TOKEN;
+if (!TOKEN) throw new Error("DISCORD_BOT_TOKEN is missing");
+
+
 
 const cmd = {
   name: "voicelog",
