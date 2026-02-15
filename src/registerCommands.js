@@ -127,6 +127,7 @@ const body = [ (typeof commands[0]?.toJSON === "function" ? commands[0].toJSON()
 
 const json = JSON.stringify(body);
 console.log("commands payload bytes =", Buffer.byteLength(json, "utf8"));
+console.log("payload json =", JSON.stringify(body, null, 2));
 console.log("first command name =", body[0]?.name);
 
 console.log("register only one:", body[0]?.name);
