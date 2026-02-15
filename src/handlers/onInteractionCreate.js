@@ -17,43 +17,34 @@ function parseTimeToNextJstDate(timeStr) {
   const ss = m[3] ? Number(m[3]) : 0;
   if (hh < 0 || hh > 23 || mm < 0 || mm > 59 || ss < 0 || ss > 59) return null;
 
-  const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
-  const nowUtcMs = Date.now();
-  const nowJst = new Date(nowUtcMs + JST_OFFSET_MS);
+  const now = new Date();
 
-  const targetJst = new Date(nowJst);
+  const jstNowStr = now.toLocaleString("en-US", { timeZone: "Asia/Tokyo" });
+  const targetJst = new Date(jstNowStr);
+
   targetJst.setHours(hh, mm, ss, 0);
 
-  if (targetJst.getTime() <= nowJst.getTime()) {
+  const currentJst = new Date(jstNowStr);
+
+  if (targetJst.getTime() <= currentJst.getTime()) {
     targetJst.setDate(targetJst.getDate() + 1);
   }
 
-  return new Date(targetJst.getTime() - JST_OFFSET_MS); // UTCに戻す
+  const diffMs = targetJst.getTime() - currentJst.getTime();
+  return new Date(Date.now() + diffMs);
 }
 
 function formatJstDateTime(msUtc) {
-  const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
-  const d = new Date(msUtc + JST_OFFSET_MS);
-  const yyyy = d.getFullYear();
-  const MM = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  const HH = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  const ss = String(d.getSeconds()).padStart(2, "0");
-  return `${yyyy}/${MM}/${dd} ${HH}:${mm}:${ss}`;
-}
-
-function formatRemaining(ms) {
-  if (ms <= 0) return "0秒";
-  const s = Math.floor(ms / 1000);
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const r = s % 60;
-  const parts = [];
-  if (h) parts.push(`${h}時間`);
-  if (m) parts.push(`${m}分`);
-  parts.push(`${r}秒`);
-  return parts.join("");
+  return new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(new Date(msUtc)).replace(/\//g, "/");
 }
 
 

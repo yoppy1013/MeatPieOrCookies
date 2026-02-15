@@ -6,7 +6,7 @@ const onGuildMemberAdd = require("./handlers/onGuildMemberAdd");
 const onVoiceStateUpdate = require("./handlers/onVoiceStateUpdate");
 const onVoiceChannelStatusUpdate = require("./handlers/onVoiceChannelStatusUpdate");
 const onMessageCreate = require("./handlers/onMessageCreate");
-const registerCommands = require("./registerCommands");
+//const registerCommands = require("./registerCommands");
 const onInteractionCreate = require("./handlers/onInteractionCreate");
 const timerManager = require("./utils/timerManager");
 
@@ -30,16 +30,17 @@ client.once("clientReady", async () => {
   console.log("CFG GUILD_ID=", cfg.GUILD_ID);
 
 
-    
+    /*
     // await を付けずに呼び出し、バックグラウンドで実行させる
     registerCommands(process.env.DISCORD_BOT_TOKEN, process.env.DISCORD_APP_ID, process.env.DISCORD_GUILD_ID)
       .then(() => console.log("バックグラウンドでの登録処理が終了しました"))
       .catch(err => console.error("登録処理で例外発生:", err));
 
     console.log("メイン処理は継続します...");
+    */
   await timerManager.restoreAll(client);
 });
-client.on("interactionCreate", onInteractionCreate(client));
+client.on("interactionCreate", onInteractionCreate({client}));
 
 client.on("guildMemberAdd", onGuildMemberAdd());
 

@@ -25,7 +25,7 @@ module.exports = async function registerCommands(token, appId, guildId) {
     new SlashCommandBuilder().setName("voicelog").setDescription("VCログ送信先設定"),
   ].map(c => c.toJSON());
 
-  // 現在のコマンドを一旦取得（比較用：任意）
+  // 現在のコマンドを取得
   let currentCommands = [];
   try {
     console.log("DEBUG: 現在のコマンドリストを取得中...");
@@ -36,10 +36,8 @@ module.exports = async function registerCommands(token, appId, guildId) {
 
   console.log(`全 ${commands.length} 個を順次登録します...`);
 
-  // 【重要】ループで1つずつ送信するが、以前と違い「配列に詰めて」送る
   for (let i = 0; i < commands.length; i++) {
     const cmd = commands[i];
-    // これまでのコマンド + 今回のコマンド を合体させて送る
     const payload = commands.slice(0, i + 1); 
 
     try {
