@@ -7,7 +7,7 @@ module.exports = async function registerCommands(token, appId, guildId) {
   const commands = [
     new SlashCommandBuilder().setName("welcome").setDescription("ミートパイかクッキーを送る"),
     new SlashCommandBuilder().setName("stamsg").setDescription("VCステータス通知先設定"),
-    new SlashCommandBuilder().setName("voicelog").setDescription("VCログ送信先設定"),
+    //new SlashCommandBuilder().setName("voicelog").setDescription("VCログ送信先設定"),
     new SlashCommandBuilder().setName("roll").setDescription("許可追加").addMentionableOption(o => o.setName("target").setDescription("対象").setRequired(true)),
     new SlashCommandBuilder().setName("deroll").setDescription("許可剥奪").addMentionableOption(o => o.setName("target").setDescription("対象").setRequired(true)),
     new SlashCommandBuilder().setName("ignore").setDescription("通知対象外設定"),
