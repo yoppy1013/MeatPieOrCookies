@@ -24,13 +24,19 @@ const client = new Client({
   partials: [Partials.Channel],
 });
 
-client.once("ready", async () => {
+client.once("clientReady", async () => {
   console.log(`サーバに接続しました: ${client.user.tag}`);
   console.log("ENV DISCORD_GUILD_ID=", process.env.DISCORD_GUILD_ID);
   console.log("CFG GUILD_ID=", cfg.GUILD_ID);
 
 
-  await registerCommands(cfg.TOKEN, cfg.APP_ID, cfg.GUILD_ID);
+    
+    // await を付けずに呼び出し、バックグラウンドで実行させる
+    registerCommands(process.env.DISCORD_BOT_TOKEN, process.env.DISCORD_APP_ID, process.env.DISCORD_GUILD_ID)
+      .then(() => console.log("バックグラウンドでの登録処理が終了しました"))
+      .catch(err => console.error("登録処理で例外発生:", err));
+
+    console.log("メイン処理は継続します...");
   await timerManager.restoreAll(client);
 });
 client.on("interactionCreate", onInteractionCreate(client));
