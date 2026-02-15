@@ -74,7 +74,7 @@ module.exports = function onInteractionCreate({ client}) {
 // 権限コマンド
     const needsAllow = new Set([
       "welcome",
-      "voice",
+      "voicelog",
       "stamsg",
       "roll",
       "deroll",
@@ -101,7 +101,7 @@ module.exports = function onInteractionCreate({ client}) {
     }
 
     // VCログ先
-    if (interaction.commandName === "voice") {
+    if (interaction.commandName === "voicelog") {
       setGuildSetting(interaction.guildId, "voiceLogChannelId", ch.id);
       await interaction.reply({ content: ` ${ch}をVCログ送信先に設定しました`, flags: MessageFlags.Ephemeral });
       return;
