@@ -4,7 +4,6 @@ const {
   SlashCommandBuilder,
   ChannelType,
 } = require("discord.js");
-require("dotenv").config();
 
 const dns = require("dns");
 dns.setDefaultResultOrder("ipv4first");
@@ -119,45 +118,23 @@ await rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [] });
 console.log("commands delete ok");
 */
 
-// ---- fetchで voicelog だけ登録テスト ----
-const TOKEN = process.env.DISCORD_BOT_TOKEN;
-if (!TOKEN) throw new Error("DISCORD_BOT_TOKEN is missing");
+const all = commands.map(c => (typeof c?.toJSON === "function" ? c.toJSON() : c));
 
-
-
-const cmd = {
-  name: "voicelog",
-  description: "このチャンネルをVCログ送信先に設定する",
-  type: 1,
-  options: [],
-};
-
-console.log("FETCH ONE TEST start:", cmd.name);
-
-const url = `https://discord.com/api/v10/applications/${appId}/guilds/${guildId}/commands`;
-
-try {
-  const res = await Promise.race([
-    fetch(url, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bot ${TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify([cmd]),
-    }),
-    new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 15000)),
-  ]);
-
-  const text = await res.text();
-  console.log("fetch status:", res.status);
-  console.log("fetch body:", text);
-} catch (e) {
-  console.error("FETCH ONE TEST failed:", e);
+for (const cmd of all) {
+  console.log("try:", cmd.name);
+  try {
+    await Promise.race([
+      rest.put(Routes.applicationGuildCommands(appId, guildId), { body: [cmd] }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 15000)),
+    ]);
+    console.log("ok:", cmd.name);
+  } catch (e) {
+    console.error("FAILED:", cmd.name, e?.message);
+    console.log("bad command object:", JSON.stringify(cmd, null, 2));
+    break;
+  }
 }
 
-console.log("FETCH ONE TEST done");
-process.exit(0);
 
 }
 
