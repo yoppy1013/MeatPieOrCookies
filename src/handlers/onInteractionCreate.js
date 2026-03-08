@@ -337,7 +337,7 @@ if (interaction.commandName === "timer") {
     timerManager.setTimer(client, guildId, userId, fireAtMs);
 
     await interaction.editReply(
-      `**${formatJstDateTime(fireAtMs)}** にVCから切断します。\n DMを許可している場合、10分前にDMで通知します \n取り消すとき: \`/timer cancel\`\n確認するとき: \`/timer status\``
+      `**${formatJstDateTime(fireAtMs)}** にVCから切断します\n DMを許可している場合、10分前にDMで通知します \n取り消すとき: \`/timer cancel\`\n確認するとき: \`/timer status\``
     );
     return;
   }

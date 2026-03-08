@@ -71,11 +71,11 @@ function scheduleOne(client, guildId, userId, fireAtMs) {
 
         await member.send(
           `<@${userId}> VC切断予告通知：あと **10分** でVCから切断されます。\n` +
-          `予定時刻: **${formatJst(fireAtMs)} (JST)**\n` +
+          `予定時刻: **${formatJst(fireAtMs)}**\n` +
           `${vcText}\n` +
-          `解除する場合、サーバ上で \`/timer cancel\` を実行してください。`+
-          `現在の設定は、サーバ上で \`/timer status\` で確認できます。` +
-          `※指定時刻にコマンドが実行されたサーバのVCに参加していない場合、この処理は行われません。`
+          `解除する場合、サーバ上で \`/timer cancel\` を実行してください。\n`+
+          `現在の設定は、サーバ上で \`/timer status\` で確認できます。\n` +
+          `※指定時刻にコマンドが実行されたサーバのVCに参加していない場合、この処理は行われません。\n`
         ).catch(() => null);
       } catch {
         // DM拒否などは無視

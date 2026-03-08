@@ -122,36 +122,46 @@ module.exports = function onVoiceStateUpdate({
           const thumb = member.displayAvatarURL({ size: 256 });
 
     // 配信
-    if (oldState.streaming !== newState.streaming) {
-      await logChannel.send({
-        embeds: [
-          makeEmbed({
-            title: newState.streaming ? "配信を開始しました" : "配信を終了しました",
-            description: `${ch}`,
-            color: newState.streaming ? 0xd8f255 : 0xffcabf,
-            thumbnailUrl: thumb,
-            fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
-          }),
-        ],
-      }).catch(() => null);
-    }
+        if (oldState.streaming !== newState.streaming) {
+          const status = newState.streaming ? "開始" : "終了";
+            await logChannel.send({
+            content: `${userName}が${ch.name}で配信を${status}しました`,
+            embeds: [
+              makeEmbed({
+                title: `配信を${status}しました`,
+                description: `**${ch.name}**`,
+                color: newState.streaming ? 0xd8f255 : 0xffcabf,
+                thumbnailUrl: thumb,
+                fields: [
+                  { name: "ユーザー", value: `<@${userId}>`, inline: true },
+                  { name: "チャンネル", value: `${ch}`, inline: true },
+                ],
+              }),
+            ],
+          }).catch(() => null);
+        }
 
     // ビデオ
-    if (oldState.selfVideo !== newState.selfVideo) {
-      await logChannel.send({
-        embeds: [
-          makeEmbed({
-            title: newState.selfVideo ? "ビデオを開始しました" : "ビデオを終了しました",
-            description: `${ch}`,
-            color: newState.selfVideo ? 0x77d9a8 : 0xff8082,
-            thumbnailUrl: thumb,
-            fields: [{ name: "ユーザー", value: `<@${userId}>`, inline: true }],
-          }),
-        ],
-      }).catch(() => null);
+        if (oldState.selfVideo !== newState.selfVideo) {
+          const status = newState.selfVideo ? "開始" : "終了";
+            await logChannel.send({
+            content: `${userName}が${ch.name}でビデオを${status}しました`,
+            embeds: [
+              makeEmbed({
+                title: `ビデオを${status}しました`,
+                description: `**${ch.name}**`,
+                color: newState.selfVideo ? 0x77d9a8 : 0xff8082,
+                thumbnailUrl: thumb,
+                fields: [
+                  { name: "ユーザー", value: `<@${userId}>`, inline: true },
+                  { name: "チャンネル", value: `${ch}`, inline: true },
+                ],
+              }),
+            ],
+          }).catch(() => null);
+        }
+      }
     }
-  }
-}
 
 
     // ===== 移動 =====
@@ -166,15 +176,18 @@ module.exports = function onVoiceStateUpdate({
       }
 
       await logChannel.send({
+        content: `${userName}が${fromCh.name}から${toCh.name} へ移動しました`,
         embeds: [
           new EmbedBuilder()
             .setTitle("VCを移動しました")
-            .setDescription(`${fromCh} から ${toCh} へ移動しました`)
+            .setDescription(`**${fromCh.name}** ⇒ **${toCh.name}**`)
             .setColor(0x005aff)
             .setThumbnail(member.displayAvatarURL({ size: 256 }))
             .setFooter({ text: formatDateTime() })
             .addFields([
               { name: "ユーザー", value: `<@${userId}>`, inline: true },
+              { name: "移動元チャンネル", value: `${fromCh}`, inline: true },
+              { name: "移動先チャンネル", value: `${toCh}`, inline: true },
               ...(durationField ? [durationField] : []),
             ]),
         ],
@@ -182,7 +195,7 @@ module.exports = function onVoiceStateUpdate({
 
       vcJoinTimes.set(userId, Date.now());
       return;
-    }
+    }   
 
     // ===== 参加 =====
     if (!oldState.channelId && newState.channelId) {
@@ -190,14 +203,18 @@ module.exports = function onVoiceStateUpdate({
       vcJoinTimes.set(userId, Date.now());
 
       await logChannel.send({
+        content: `${userName}が${ch.name}に参加しました`,
         embeds: [
           new EmbedBuilder()
             .setTitle("VCに参加しました")
-            .setDescription(`${ch} に参加しました`)
+            .setDescription(`**${ch.name}** に参加しました`)
             .setColor(0x03af7a)
             .setThumbnail(member.displayAvatarURL({ size: 256 }))
             .setFooter({ text: formatDateTime() })
-            .addFields([{ name: "ユーザー", value: `<@${userId}>`, inline: true }]),
+            .addFields([
+              { name: "ユーザー", value: `<@${userId}>`, inline: true },
+              { name: "チャンネル", value: `${ch}`, inline: true },
+            ]),
         ],
       }).catch(() => null);
       return;
@@ -214,15 +231,17 @@ module.exports = function onVoiceStateUpdate({
       }
 
       await logChannel.send({
+        content: `${userName}が${ch.name}から退出しました`,
         embeds: [
           new EmbedBuilder()
             .setTitle("VCから退出しました")
-            .setDescription(`${ch} から退出しました`)
+            .setDescription(`**${ch.name}** から退出しました`)
             .setColor(0xff4b00)
             .setThumbnail(member.displayAvatarURL({ size: 256 }))
             .setFooter({ text: formatDateTime() })
             .addFields([
               { name: "ユーザー", value: `<@${userId}>`, inline: true },
+              { name: "チャンネル", value: `${ch}`, inline: true },
               { name: "通話時間", value: duration, inline: true },
             ]),
         ],
