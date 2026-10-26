@@ -126,6 +126,7 @@ module.exports = function onVoiceStateUpdate({
           const status = newState.streaming ? "開始" : "終了";
             await logChannel.send({
             content: `${userName}が${ch.name}で配信を${status}しました`,
+            allowedMentions: { parse: [] },
             embeds: [
               makeEmbed({
                 title: `配信を${status}しました`,
@@ -146,6 +147,7 @@ module.exports = function onVoiceStateUpdate({
           const status = newState.selfVideo ? "開始" : "終了";
             await logChannel.send({
             content: `${userName}が${ch.name}でビデオを${status}しました`,
+            allowedMentions: { parse: [] },
             embeds: [
               makeEmbed({
                 title: `ビデオを${status}しました`,
@@ -177,6 +179,7 @@ module.exports = function onVoiceStateUpdate({
 
       await logChannel.send({
         content: `${userName}が${fromCh.name}から${toCh.name} へ移動しました`,
+        allowedMentions: { parse: [] },
         embeds: [
           new EmbedBuilder()
             .setTitle("VCを移動しました")
@@ -204,6 +207,7 @@ module.exports = function onVoiceStateUpdate({
 
       await logChannel.send({
         content: `${userName}が${ch.name}に参加しました`,
+        allowedMentions: { parse: [] },
         embeds: [
           new EmbedBuilder()
             .setTitle("VCに参加しました")
@@ -232,6 +236,7 @@ module.exports = function onVoiceStateUpdate({
 
       await logChannel.send({
         content: `${userName}が${ch.name}から退出しました`,
+        allowedMentions: { parse: [] },
         embeds: [
           new EmbedBuilder()
             .setTitle("VCから退出しました")

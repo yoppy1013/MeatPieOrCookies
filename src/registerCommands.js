@@ -25,35 +25,10 @@ module.exports = async function registerCommands(token, appId, guildId) {
     new SlashCommandBuilder().setName("voicelog").setDescription("VCログ送信先設定"),
   ].map(c => c.toJSON());
 
-  // 現在のコマンドを取得
-  let currentCommands = [];
-  try {
-    console.log("DEBUG: 現在のコマンドリストを取得中...");
-    currentCommands = await rest.get(Routes.applicationGuildCommands(appId, guildId));
-  } catch (e) {
-    console.log("取得失敗（無視して続行）:", e.message);
-  }
-
-  console.log(`全 ${commands.length} 個を順次登録します...`);
-
-  for (let i = 0; i < commands.length; i++) {
-    const cmd = commands[i];
-    const payload = commands.slice(0, i + 1); 
-
-    try {
-      process.stdout.write(`登録中 (${i + 1}/${commands.length}): /${cmd.name} ... `);
-      await rest.put(
-        Routes.applicationGuildCommands(appId, guildId),
-        { body: payload }
-      );
-      console.log("OK");
-    } catch (error) {
-      console.log("FAILED");
-      console.error(`エラー詳細 (/${cmd.name}):`, error.message);
-      break; 
-    }
-    // APIへの負荷を避けるため少し待機
-    await new Promise(res => setTimeout(res, 500));
-  }
+  console.log(`全 ${commands.length} 個を一括登録します...`);
+  await rest.put(
+    Routes.applicationGuildCommands(appId, guildId),
+    { body: commands }
+  );
   console.log("--- 登録プロセス完了 ---");
 };
