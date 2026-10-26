@@ -9,9 +9,13 @@ module.exports = function onGuildMemberAdd() {
     if (chId) {
       const channel = member.guild.channels.cache.get(chId);
       if (channel && channel.isTextBased()) {
-        await channel.send(
-          "ようこそいらいしゃい！みんな来ると思ってミートパイを焼いてたの！それともクッキーがいいかしら？"
-        );
+        try {
+          await channel.send(
+            "ようこそいらいしゃい！みんな来ると思ってミートパイを焼いてたの！それともクッキーがいいかしら？"
+          );
+        } catch (err) {
+          console.error(`welcomeメッセージ送信に失敗しました channelId=${chId} user=${member.user.tag}`, err);
+        }
       }
     }
 
